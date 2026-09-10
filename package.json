@@ -1,0 +1,44 @@
+{
+    "name": "xu-quiet-outline",
+    "version": "1.0.0",
+    "description": "大纲：侧边栏大纲树，点击跳转，滚动与光标双向定位，层级拖拽与标题样式定制.",
+    "main": "main.js",
+    "scripts": {
+        "build": "npm run check && npm run lint && vite build --mode production",
+        "check": "vue-tsc -p tsconfig.app.json --noEmit --skipLibCheck",
+        "dev": "vite build --mode development",
+        "eol:check": "node scripts/check-line-endings.mjs --check-staged",
+        "eol:fix": "node scripts/check-line-endings.mjs --fix",
+        "eol:fix-modified": "node scripts/check-line-endings.mjs --fix-modified",
+        "lint": "oxlint",
+        "lint:fix": "oxlint --fix",
+        "pub": "node scripts/publish.mjs",
+        "version": "node scripts/version-bump.mjs && git add manifest.json versions.json"
+    },
+    "keywords": [
+        "obsidian",
+        "outline"
+    ],
+    "author": "旭说",
+    "license": "MIT",
+    "dependencies": {
+        "@codemirror/view": "^6.38.6",
+        "html-to-text": "^9.0.5",
+        "vue": "^3.5.39"
+    },
+    "devDependencies": {
+        "@types/html-to-text": "^9.0.4",
+        "@types/node": "^24.13.3",
+        "@vicons/utils": "^0.1.4",
+        "@vitejs/plugin-vue": "^6.0.7",
+        "@vue/tsconfig": "^0.9.1",
+        "naive-ui": "2.43.2",
+        "obsidian": "^1.11.0",
+        "octokit": "^5.0.5",
+        "oxlint": "^1.38.0",
+        "tslib": "2.8.1",
+        "typescript": "~5.9.3",
+        "vite": "^8.1.4",
+        "vue-tsc": "^3.3.7"
+    }
+}

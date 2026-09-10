@@ -1,0 +1,82 @@
+import { Menu } from "obsidian";
+
+type MenuItemHandler = () => void | Promise<void>;
+
+export type MenuItemConfig =
+    | {
+          title: string;
+          type: "normal";
+          fn: MenuItemHandler;
+      }
+    | {
+          title: string;
+          type: "danger";
+          fn: MenuItemHandler;
+      }
+    | {
+          title: string;
+          type: "parent";
+          subMenu: MenuItemConfig[];
+      }
+    | {
+          type: "separator";
+      };
+
+export function setupMenu(menu: Menu, menuConfig: MenuItemConfig[]) {
+    function addItem(parent: Menu, itemConfig: MenuItemConfig) {
+        switch (itemConfig.type) {
+            case "normal":
+                parent.addItem((item) => item.setTitle(itemConfig.title).onClick(itemConfig.fn));
+                break;
+            case "danger":
+                parent.addItem((item) =>
+                    item.setTitle(itemConfig.title).setWarning(true).onClick(itemConfig.fn),
+                );
+                break;
+            case "parent":
+                parent.addItem((item) => {
+                    item.setTitle(itemConfig.title);
+                    const subMenu = item.setSubmenu().setNoIcon();
+                    setupMenu(subMenu, itemConfig.subMenu);
+                });
+                break;
+            case "separator":
+                parent.addSeparator();
+                break;
+        }
+    }
+
+    menuConfig.forEach((itemConfig) => {
+        addItem(menu, itemConfig);
+    });
+}
+
+export function normal(title: string, fn: MenuItemHandler): MenuItemConfig {
+    return {
+        type: "normal",
+        title,
+        fn,
+    };
+}
+
+export function danger(title: string, fn: MenuItemHandler): MenuItemConfig {
+    return {
+        type: "danger",
+        title,
+        fn,
+    };
+}
+
+export function parent(title: string, subMenu: MenuItemConfig[]): MenuItemConfig {
+    return {
+        type: "parent",
+        title,
+        subMenu,
+    };
+}
+
+export function separator(): MenuItemConfig {
+    return {
+        type: "separator",
+    };
+}

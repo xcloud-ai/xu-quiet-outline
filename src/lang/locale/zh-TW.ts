@@ -1,0 +1,150 @@
+// 繁體中文
+
+export default {
+    // Markdown navigator menu: change heading level（調整標題層級）
+    "Change Level": "調整層級",
+    Increase: "增加",
+    "Increase Recursively": "遞迴增加",
+    Decrease: "減少",
+    "Decrease Recursively": "遞迴減少",
+    "Maximum level reached": "已達到最大層級",
+    "Minimum level reached": "已達到最小層級",
+
+    // Confirm modal
+    Confirm: "確認",
+    Cancel: "取消",
+
+    // Markdown navigator menu
+    Delete: "刪除",
+
+    // Confirm prompt (dangerous operation)
+    "This will delete heading:": "即將刪除標題：",
+    "This will modify the note content. Continue?": "此操作會修改筆記內容，是否繼續？",
+
+    "Settings for Quiet Outline.": "Quiet Outline 的設定頁面",
+    "Set Primary Color": "設定主要顏色 明/暗",
+    "Patch default color": "使用設定覆蓋預設主要顏色",
+    "Set Rainbow Line Color": "設定彩虹大綱線顏色",
+    "Render Markdown": "渲染 markdown 元素",
+    "Render heading string as markdown format.": "以 markdown 格式渲染標題文字",
+    "Search Support": "開啟搜尋",
+    "Add a searching area on the top": "在頂部新增一個搜尋框",
+    "Level Switch": "層級切換器",
+    "Expand headings to certain level.": "展開標題到特定層級",
+    "Default Level": "預設層級",
+    "Default expand level when opening a new note.": "開啟新筆記時，標題展開到的預設層級",
+    "No expand": "不展開",
+    "To Bottom": "跳轉到筆記末尾",
+    Reset: "重置",
+    "Input to search": "輸入以搜尋",
+    "result(s):": "筆相符結果：",
+    "Hide Unsearched": "過濾未搜尋的標題",
+    "Hide irrelevant headings when searching": "搜尋時，隱藏未命中的標題",
+    "Regex Search": "正則搜尋",
+    "Search headings using regular expression": "支援使用正則運算式來搜尋",
+    "Auto Expand": "自動展開",
+    "Auto expand and collapse headings when scrolling and cursor position change":
+        "當捲動頁面或游標改變時，自動跟隨目前所在標題並展開",
+    "Auto Scroll Into View": "自動捲動到定位的標題",
+    "Auto scroll located heading into view": "當捲動或游標位置變化時，大綱自動捲動到相應標題",
+    "Only Expand": "僅展開目前標題",
+    "Expand and Collapse Rest": "展開同時摺疊剩餘標題",
+    "Expand and Collapse Rest to Default": "展開同時摺疊剩餘標題至預設層級",
+    "Expand and Collapse Rest to Setting Level (Level Switch)":
+        "展開同時摺疊剩餘標題至設定層級（層級切換器）",
+    Disabled: "關閉自動展開",
+    "Locate By Cursor": "定位到游標處",
+    "Highlight and Auto expand postion will be determined by cursor position":
+        "高亮和自動展開位置將由游標位置決定",
+    "Show Popover on hover": "滑鼠懸停在標題時顯示筆記內容",
+    "Press functional key and move cursor to heading": "按住功能鍵，移動游標到標題處",
+    Disable: "關閉",
+    Ellipsis: "省略長標題",
+    "Tooltip direction": "完整標題顯示方向",
+    "Keep one line per heading": "保持標題只有一行，省略多餘部分",
+    "Persist Markdown States": "持續保存 Markdown 狀態",
+    "Save and restore cursor, scroll state of markdown note, as well as expanded/collapsed state of headings":
+        "儲存並恢復 Markdown 筆記的游標、捲動狀態，以及標題的展開/摺疊狀態",
+    "Save Cursor Position": "儲存游標位置",
+    "Save and restore cursor position of markdown note": "儲存並恢復 Markdown 筆記的游標位置",
+    "Save Scroll Position": "儲存捲動位置",
+    "Save and restore scroll position of markdown note": "儲存並恢復 Markdown 筆記的捲動位置",
+    "Save Heading Expansion State": "儲存標題展開狀態",
+    "Save and restore expanded/collapsed state of headings": "儲存並恢復標題的展開/摺疊狀態",
+    "Save Delay": "儲存延遲",
+    "Delay after the last change before saving markdown-states.json, in seconds. Set to 0 to save immediately.":
+        "最後一次變化後延遲儲存 markdown-states.json 的秒數。設定為 0 時立即儲存。",
+    "Keep Search Input": "保留搜尋輸入",
+    "Keep search input when switching between notes": "切換筆記時保留搜尋輸入",
+    "Drag headings to modify note": "啟用拖曳標題來調整文件結構",
+    "❗ This will modify note content, be careful.": "❗ 拖曳操作會改變文件內容，請小心使用",
+    "Text Direction": "文字方向",
+    "is decided by": "由什麼決定",
+
+    "Export Format": "標題輸出格式",
+
+    // 設定頁籤
+    Canvas: "白板",
+    Bases: "資料庫",
+    General: "一般設定",
+    Styles: "樣式設定",
+
+    // Canvas 相關設定
+    "Canvas Sort Order": "白板大綱排序",
+    "Heading Truncate Length": "標題截斷長度",
+    "Show group nodes": "顯示群組節點",
+    "Show file nodes": "顯示檔案節點",
+    "Show text nodes": "顯示文字節點",
+    "Show link nodes": "顯示連結節點",
+    "Sort method for canvas nodes": "白板卡片的排序邏輯",
+    "Sort by Area": "按面積 (大 -> 小)",
+    "Sort by Name (A -> Z)": "按名稱 (A -> Z)",
+    "Sort by Name (Z -> A)": "按名稱 (Z -> A)",
+
+    // Bases 相關設定
+    "Display Property": "顯示屬性",
+    "Property shown for each row": "每一列顯示的屬性，例如 file.name、file.path",
+    "Bases syntax": "Bases 語法",
+
+    // menu
+    Copy: "複製",
+    Heading: "標題",
+    "Heading and children headings": "標題和子標題",
+    "Heading and Content": "該段內容",
+    "Heading and siblings headings": "標題和兄弟標題",
+    "Rename heading": "重命名標題",
+    "Link of heading": "標題連結",
+
+    // Context menu items
+    "Collapse Recursively": "遞迴摺疊",
+    "Expand Recursively": "遞迴展開",
+    "Collapse Sibling": "摺疊同級標題",
+    "Expand Sibling": "展開同級標題",
+
+    "Vimlize Canvas": "Vim Canvas",
+    "Add vim-like keymap for canvas": "給 Canvas 新增 Vim 風格的快捷鍵",
+
+    // New settings
+    "Font Size": "字型大小",
+    "Custom font size for outline text (e.g., 14px, 1rem)":
+        "大綱文字的自訂字型大小（例如：14px, 1rem）",
+    "Font Family": "字型家族",
+    "Custom font family for outline text": "大綱文字的自訂字型家族",
+    "Font Weight": "字型粗細",
+    "Custom font weight for outline text (e.g., normal, bold, 400, 700)":
+        "大綱文字的自訂字型粗細（例如：normal, bold, 400, 700）",
+    "Line Height": "行高",
+    "Custom line height for outline text (e.g., 1.5, 2)": "大綱文字的自訂行高（例如：1.5, 2）",
+    "Line Gap": "行間距",
+    "Custom gap between lines (e.g., 4px, 0.5rem)": "行之間的自訂間距（例如：4px, 0.5rem）",
+
+    // Font color settings
+    "Custom Font Color": "自訂字型顏色",
+    "Enable custom font colors for different heading levels": "為不同級別的標題啟用自訂字型顏色",
+    "H1 Color": "H1 顏色",
+    "H2 Color": "H2 顏色",
+    "H3 Color": "H3 顏色",
+    "H4 Color": "H4 顏色",
+    "H5 Color": "H5 顏色",
+    "H6 Color": "H6 顏色",
+};

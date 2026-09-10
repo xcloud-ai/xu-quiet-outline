@@ -1,0 +1,10 @@
+{
+    "id": "xu-quiet-outline",
+    "name": "XU Quiet Outline",
+    "version": "1.0.0",
+    "minAppVersion": "1.7.2",
+    "description": "大纲：侧边栏大纲树，点击跳转，滚动与光标双向定位，层级拖拽与标题样式定制.",
+    "author": "旭说",
+    "authorUrl": "https://github.com/xcloud-ai",
+    "isDesktopOnly": false
+}

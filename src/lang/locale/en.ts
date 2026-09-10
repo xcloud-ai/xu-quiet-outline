@@ -1,0 +1,178 @@
+// English
+
+export default {
+    // Markdown navigator menu: change heading level
+    "Change Level": "Change Level",
+    Increase: "Increase",
+    "Increase Recursively": "Increase Recursively",
+    Decrease: "Decrease",
+    "Decrease Recursively": "Decrease Recursively",
+    "Maximum level reached": "Maximum level reached",
+    "Minimum level reached": "Minimum level reached",
+    "Settings for Quiet Outline.": "Settings for Quiet Outline.",
+    "Set Primary Color": "Set Primary Color Light/Dark",
+    "Patch default color": "Patch default color",
+    "Set Rainbow Line Color": "Set Rainbow Line Color",
+    "Render Markdown": "Render Markdown",
+    "Render heading string as markdown format.": "Render heading string as markdown format",
+    "Search Support": "Search Support",
+    "Add a searching area on the top": "Add a search area on the top",
+    "Level Switch": "Level Switch",
+    "Expand headings to certain level.": "Expand headings to certain level",
+    "Default Level": "Default Level",
+    "Default expand level when opening a new note.": "Default expand level",
+    "No expand": "No expand",
+    "To Bottom": "To Bottom",
+    Reset: "Reset",
+    "Input to search": "Input to search",
+    "result(s):": "result(s):",
+    "Hide Unsearched": "Hide Unsearched",
+    "Hide irrelevant headings when searching": "Hide irrelevant headings when searching",
+    "Regex Search": "Regex Search",
+    "Search headings using regular expression": "Search headings using regular expression",
+    "Auto Expand": "Auto Expand",
+    "Auto expand and collapse headings when scrolling and cursor position change":
+        "Auto expand and collapse headings when scrolling and cursor position change",
+    "Auto Scroll Into View": "Auto Scroll Into View",
+    "Auto scroll located heading into view": "Auto scroll located heading into view",
+    "Only Expand": "Only Expand",
+    "Expand and Collapse Rest": "Expand and Collapse Rest",
+    "Expand and Collapse Rest to Default": "Expand and Collapse Rest to Default",
+    "Expand and Collapse Rest to Setting Level (Level Switch)":
+        "Expand and Collapse Rest to Setting Level (Level Switch)",
+    Disabled: "Disabled",
+    "Locate By Cursor": "Locate By Cursor",
+    "Show Popover on hover": "Show Popover on hover",
+    "Press functional key and move cursor to heading":
+        "Press functional key and move cursor to heading",
+    Disable: "Disable",
+    "Highlight and Auto expand postion will be determined by cursor position":
+        "Highlight and Auto expand postion will be determined by cursor position",
+    Ellipsis: "Ellipsis",
+    "Tooltip direction": "Tooltip direction",
+    "Keep one line per heading": "Keep one line per heading",
+    "Persist Markdown States": "Persist Markdown States",
+    "Save and restore cursor, scroll state of markdown note, as well as expanded/collapsed state of headings":
+        "Save and restore cursor, scroll state of markdown note, as well as expanded/collapsed state of headings",
+    "Save Cursor Position": "Save Cursor Position",
+    "Save and restore cursor position of markdown note":
+        "Save and restore cursor position of markdown note",
+    "Save Scroll Position": "Save Scroll Position",
+    "Save and restore scroll position of markdown note":
+        "Save and restore scroll position of markdown note",
+    "Save Heading Expansion State": "Save Heading Expansion State",
+    "Save and restore expanded/collapsed state of headings":
+        "Save and restore expanded/collapsed state of headings",
+    "Save Delay": "Save Delay",
+    "Delay after the last change before saving markdown-states.json, in seconds. Set to 0 to save immediately.":
+        "Delay after the last change before saving markdown-states.json, in seconds. Set to 0 to save immediately.",
+    "Keep Search Input": "Keep Search Input",
+    "Keep search input when switching between notes":
+        "Keep search input when switching between notes",
+    "Drag headings to modify note": "Drag headings to modify note",
+    "❗ This will modify note content, be careful.": "❗ This will modify note content, be careful",
+    "Text Direction": "Text Direction",
+    "is decided by": "is decided by",
+
+    "Export Format": "Export Format",
+
+    // Settings tabs
+    General: "General",
+    Styles: "Styles",
+    Canvas: "Canvas",
+    Bases: "Bases",
+
+    // Canvas settings
+    "Canvas Sort Order": "Canvas Sort Order",
+    "Heading Truncate Length": "Heading Truncate Length",
+    "Sort method for canvas nodes": "Sort method for canvas nodes",
+    "Sort by Area": "Sort by Area (Big -> Small)",
+    "Sort by Name (A -> Z)": "Sort by Name (A -> Z)",
+    "Sort by Name (Z -> A)": "Sort by Name (Z -> A)",
+    "Show group nodes": "Show group nodes",
+    "Show file nodes": "Show file nodes",
+    "Show text nodes": "Show text nodes",
+    "Show link nodes": "Show link nodes",
+
+    // Bases settings
+    "Display Property": "Display Property",
+    "Property shown for each row": "Property shown for each row, e.g. file.name, file.path",
+    "Bases syntax": "Bases syntax",
+
+    // menu
+    Copy: "Copy",
+    Heading: "Heading",
+    "Heading and children headings": "Heading and children headings",
+    "Heading and Content": "Heading and Content",
+    "Heading and siblings headings": "Heading and siblings headings",
+    "Rename heading": "Rename",
+    "Link of heading": "Link of heading",
+    "Collapse Recursively": "Collapse Recursively",
+    "Expand Recursively": "Expand Recursively",
+    "Collapse Sibling": "Collapse Sibling",
+    "Expand Sibling": "Expand Sibling",
+    "Vimlize Canvas": "Vimlize Canvas",
+    "Add vim-like keymap for canvas": "Add vim-like keymap for canvas",
+
+    // Confirm modal
+    Confirm: "Confirm",
+    Cancel: "Cancel",
+
+    // Markdown navigator menu
+    Delete: "Delete",
+
+    // Confirm prompt (dangerous operation)
+    "This will delete heading:": "This will delete heading:",
+    "This will modify the note content. Continue?": "This will modify the note content. Continue?",
+
+    // Text style settings
+    "Font Size": "Font Size",
+    "Custom font size for outline text (e.g., 14px, 1rem)":
+        "Custom font size for outline text (e.g., 14px, 1rem)",
+    "Font Family": "Font Family",
+    "Custom font family for outline text": "Custom font family for outline text",
+    "Font Weight": "Font Weight",
+    "Custom font weight for outline text (e.g., normal, bold, 400, 700)":
+        "Custom font weight for outline text (e.g., normal, bold, 400, 700)",
+    "Line Height": "Line Height",
+    "Custom line height for outline text (e.g., 1.5, 2)":
+        "Custom line height for outline text (e.g., 1.5, 2)",
+    "Line Gap": "Line Gap",
+    "Custom gap between lines (e.g., 4px, 0.5rem)": "Custom gap between lines (e.g., 4px, 0.5rem)",
+
+    // Font color settings
+    "Custom Font Color": "Custom Font Color",
+    "Enable custom font colors for different heading levels":
+        "Enable custom font colors for different heading levels",
+    "H1 Color": "H1 Color",
+    "H2 Color": "H2 Color",
+    "H3 Color": "H3 Color",
+    "H4 Color": "H4 Color",
+    "H5 Color": "H5 Color",
+    "H6 Color": "H6 Color",
+    "General Settings": "General Settings",
+    "Default expanding level": "Default expanding level",
+    "0 means no limitation, and all the rest of levels will be expanded": "0 means no limitation, and all the rest of levels will be expanded",
+    "Auto expand mode": "Auto expand mode",
+    "Control the expansion behavior when a leaf is changed": "Control the expansion behavior when a leaf is changed",
+    "Drag to modify": "Drag to modify",
+    "Expand and collapse the rest to default level": "Expand and collapse the rest to default level",
+    "Expand and collapse the rest to the level below": "Expand and collapse the rest to the level below",
+    "Allow dragging headings in the outline to change their level and position. This will modify the note content.": "Allow dragging headings in the outline to change their level and position. This will modify the note content.",
+    "Locate by cursor": "Locate by cursor",
+    "Highlight the nearest heading by the cursor": "Highlight the nearest heading by the cursor",
+    "Auto scroll into view": "Auto scroll into view",
+    "Highlighting headings auto scroll into view": "Highlighting headings auto scroll into view",
+    "Style Settings": "Style Settings",
+    "Override primary color": "Override primary color",
+    "This setting is used to override the primary color of the theme": "This setting is used to override the primary color of the theme",
+    "Rainbow line color": "Rainbow line color",
+    "The color of the line can be customized by rainbow": "The color of the line can be customized by rainbow",
+    "Rainbow line colors": "Rainbow line colors",
+    "Font Settings": "Font Settings",
+    "Font size": "Font size",
+    "Font family": "Font family",
+    "Font weight": "Font weight",
+    "Line height": "Line height",
+    "Line gap": "Line gap",
+};

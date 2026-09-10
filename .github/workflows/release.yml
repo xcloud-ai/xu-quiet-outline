@@ -1,0 +1,56 @@
+name: Build obsidian plugin
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24.x"
+          cache: npm
+
+      - name: Build
+        shell: bash
+        run: |
+          npm ci
+          npm run build
+
+          ls -la
+
+      - name: Generate artifact attestations
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
+
+      - name: Create Release & upload assets
+        uses: softprops/action-gh-release@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            main.js
+            manifest.json
+            styles.css

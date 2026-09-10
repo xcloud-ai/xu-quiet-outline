@@ -1,0 +1,37 @@
+import { store } from "@/store";
+import { type TreeOption } from "naive-ui";
+
+export function makeKey(level: number, index: number) {
+    return "item-" + level + "-" + index;
+}
+
+export function keyToIndex(key: string) {
+    return parseInt(key.split("-")[2]);
+}
+
+export function nodeToIndex(node: TreeOption | string): number {
+    if (typeof node !== "string") {
+        node = node.key as string;
+    }
+    return parseInt(node.split("-")[2]);
+}
+
+export function isLeaf(idx: number) {
+    return (
+        idx === store.headers.length - 1 || store.headers[idx + 1].level <= store.headers[idx].level
+    );
+}
+
+// calculate path of heading by store.header array
+export function getPathFromArr(index: number) {
+    const res: number[] = [];
+    if (index < 0 || !store.headers[index]) return res;
+    let curLevel = store.headers[index].level + 1;
+    for (let i = index; i >= 0; i--) {
+        if (store.headers[i].level < curLevel) {
+            res.push(i);
+            curLevel = store.headers[i].level;
+        }
+    }
+    return res.reverse();
+}

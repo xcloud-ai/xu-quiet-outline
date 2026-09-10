@@ -1,0 +1,38 @@
+export class Deferred<T = void> {
+    state: "resolved" | "rejected" | "unresolved" = "unresolved";
+    resolve!: (value: T | Promise<T>) => void;
+    reject!: (err?: unknown) => void;
+
+    promise = new Promise<T>((resolve, reject) => {
+        this.resolve = resolve;
+        this.reject = reject;
+    }).then(
+        (res) => (this.setState("resolved"), res),
+        (err) => (this.setState("rejected"), Promise.reject(toError(err))),
+    );
+
+    protected setState(state: "resolved" | "rejected"): void {
+        if (this.state === "unresolved") {
+            this.state = state;
+        }
+    }
+
+    static resolved(t: void): Deferred<void>;
+    static resolved<T>(t: T): Deferred<T> {
+        const deferred = new Deferred<T>();
+        deferred.resolve(t);
+        return deferred;
+    }
+
+    isResolved(): boolean {
+        return this.state === "resolved";
+    }
+
+    isRejected(): boolean {
+        return this.state === "rejected";
+    }
+}
+
+function toError(err: unknown): Error {
+    return err instanceof Error ? err : new Error(String(err));
+}
