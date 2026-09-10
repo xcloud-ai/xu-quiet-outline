@@ -1,26 +1,14 @@
-import {
-    Component,
-    debounce,
-    FileView,
-    Plugin,
-    TFile,
-    View,
-    type ViewState,
-    WorkspaceLeaf,
-} from "obsidian";
+import { Component, debounce, FileView, Plugin, TFile, View } from "obsidian";
 
 import { Nav, createNav } from "./navigators";
 import { store } from "./store";
 import { OutlineView, VIEW_TYPE } from "./ui/view";
 import { debounceCb } from "./utils/debounce";
 
-import { type MarkdownHeading } from "./navigators/markdown";
 import { DEFAULT_SETTINGS, type QuietOutlineSettings, SettingTab } from "./settings";
 import { registerCommands } from "./commands";
 import { eventBus } from "./utils/event-bus";
 import "./stalin.css";
-
-type LeafEphemeralState = Record<string, unknown> | undefined;
 
 export default class QuietOutline extends Plugin {
     settings!: QuietOutlineSettings;
@@ -95,7 +83,6 @@ export default class QuietOutline extends Plugin {
 
         this.registerEvent(
             this.app.workspace.on("active-leaf-change", async (leaf) => {
-                const prevView = this.prevView;
                 this.prevView = leaf?.view || null;
                 if (!leaf) return;
 
@@ -155,7 +142,7 @@ export default class QuietOutline extends Plugin {
             this.navigator = createNav(type, this, view);
             await this.navigator.load();
         } catch (e) {
-            console.error(`Failed to initialize ${type} navigator: ` + e);
+            console.error(`Failed to initialize ${type} navigator: ${String(e)}`);
             this.navigator = createNav("dummy", this, null);
             await this.navigator.load();
         }
@@ -185,7 +172,8 @@ export default class QuietOutline extends Plugin {
     }
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+        const data = (await this.loadData()) as Partial<QuietOutlineSettings>;
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
         // 空样式值归一化为默认值（兼容旧数据；清空输入框也回默认）
         for (const key of ["font_size", "font_family", "font_weight", "line_height", "line_gap"] as const) {
             if (!this.settings[key].trim()) {

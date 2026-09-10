@@ -23,7 +23,6 @@
     "license": "MIT",
     "dependencies": {
         "@codemirror/view": "^6.38.6",
-        "html-to-text": "^9.0.5",
         "vue": "^3.5.39"
     },
     "devDependencies": {

@@ -1,4 +1,4 @@
-import { type EditorRange, MarkdownView, debounce, type Pos } from "obsidian";
+import { MarkdownView, debounce, type Pos } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { editorEvent } from "@/editor-ext";
 import type QuietOutline from "@/plugin";
@@ -7,7 +7,6 @@ import { Nav } from "./base";
 import { calcModifies } from "@/utils/diff";
 import { parseMarkdown, stringifySection, moveHeading } from "@/utils/md-process";
 import { eventBus } from "@/utils/event-bus";
-import type { TreeOption } from "naive-ui";
 
 let plugin: QuietOutline;
 
@@ -64,7 +63,7 @@ export class MarkDownNav extends Nav {
         void this.plugin.startJumping();
         plugin.outlineView?.vueInstance.onPosChange(index);
 
-        activeWindow.setTimeout(() => {
+        window.setTimeout(() => {
             this.view.app.workspace.setActiveLeaf(this.view.leaf, { focus: true });
             this.view.setEphemeralState(state);
         });
@@ -84,7 +83,7 @@ export class MarkDownNav extends Nav {
         void this.plugin.startJumping();
         plugin.outlineView?.vueInstance.onPosChange(index);
 
-        activeWindow.setTimeout(() => {
+        window.setTimeout(() => {
             this.view.setEphemeralState(state);
         });
     }
@@ -108,16 +107,18 @@ export class MarkDownNav extends Nav {
         };
 
         scroll();
-        activeWindow.setTimeout(scroll, 100);
+        window.setTimeout(scroll, 100);
     }
 
     getDefaultLevel(): number {
-        let level;
+        let level: number | undefined;
         if (this.view.file) {
             const cache = this.plugin.app.metadataCache.getFileCache(this.view.file);
-            level = cache?.frontmatter?.["qo-default-level"];
-            if (typeof level === "string") {
-                level = parseInt(level);
+            const raw: unknown = cache?.frontmatter?.["qo-default-level"];
+            if (typeof raw === "number") {
+                level = raw;
+            } else if (typeof raw === "string") {
+                level = parseInt(raw);
             }
         }
 

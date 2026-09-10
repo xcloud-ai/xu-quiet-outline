@@ -1,6 +1,5 @@
 import type { Command } from "obsidian";
 import type QuietOutline from "./plugin";
-import { OutlineView, VIEW_TYPE } from "./ui/view";
 import { store } from "./store";
 import type { MarkdownHeading } from "./navigators/markdown";
 

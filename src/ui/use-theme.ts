@@ -105,7 +105,7 @@ export function useOutlineTheme() {
     });
 
     // RTL
-    const biDi = computed(() => "isolate" as string);
+    const biDi = computed(() => "isolate");
 
     return {
         theme,
@@ -132,9 +132,7 @@ function getDefaultColor() {
 function cssColorToRgba(color: string) {
     if (!CSS.supports("color", color)) return "rgba(0, 0, 0, 0)";
 
-    // canvas cannot be created via createEl
-    // eslint-disable-next-line obsidianmd/prefer-create-el
-    const canvas = activeDocument.createElement("canvas");
+    const canvas = createEl("canvas");
     canvas.width = canvas.height = 1;
     const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
 

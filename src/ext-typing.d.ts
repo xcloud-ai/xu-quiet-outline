@@ -1,3 +1,4 @@
+/* eslint-disable no-undef -- module augmentation 内的类型名由 TS 从被增强的 "obsidian" 模块解析，no-undef 无法理解增强语法 */
 import type {
     AllCanvasNodeData,
     CanvasColor,
@@ -66,9 +67,9 @@ declare module "obsidian" {
         el: HTMLElement;
         height: number;
         html: string;
-        /** @deprecated has been removed from 1.9.0 */
+        /** legacy field, only present before Obsidian 1.9.0 (removed upstream) */
         lineStart: number;
-        /** @deprecated has been removed from 1.9.0 */
+        /** legacy field, only present before Obsidian 1.9.0 (removed upstream) */
         lineEnd: number;
         lines: number;
         start: { line: number; col: number; offset: number };
@@ -354,10 +355,10 @@ declare module "obsidian" {
     }
 
     export interface PdfEventBusLike {
-        on(eventName: string, listener: (...args: any[]) => void, options?: any): void;
-        _on(eventName: string, listener: (...args: any[]) => void, options?: any): void;
-        _off(eventName: string, listener: (...args: any[]) => void): void;
-        dispatch(eventName: string, data?: any): void;
+        on(eventName: string, listener: (...args: unknown[]) => void, options?: unknown): void;
+        _on(eventName: string, listener: (...args: unknown[]) => void, options?: unknown): void;
+        _off(eventName: string, listener: (...args: unknown[]) => void): void;
+        dispatch(eventName: string, data?: unknown): void;
     }
 
     interface PdfOutlineViewerLike {
@@ -388,5 +389,7 @@ declare module "obsidian" {
 
     export type PdfDestination = string | unknown[];
 }
+
+/* eslint-enable no-undef -- module augmentation 范围结束，恢复全局 no-undef 检查 */
 
 export {};

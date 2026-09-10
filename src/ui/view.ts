@@ -5,9 +5,21 @@ import type QuietOutline from "../plugin";
 
 export const VIEW_TYPE = "xu-quiet-outline";
 
+/** Outline.vue 挂载实例对外暴露的方法（eslint 无法从 .vue 推断，显式声明） */
+export interface OutlineVueInstance {
+    setExpand(expand: boolean): void;
+    move(direction: "up" | "down" | "top" | "bottom"): void;
+    center(): void;
+    currentSelected(): number | undefined;
+    selectVisible(): void;
+    onPosChange(index: number): void;
+    onLeafChange(): void;
+    forceRemakeTree(): void;
+}
+
 export class OutlineView extends ItemView {
     vueApp!: App;
-    vueInstance!: InstanceType<typeof Outline>;
+    vueInstance!: OutlineVueInstance;
     plugin: QuietOutline;
     scopes!: Record<string, Scope>;
     pendingKey?: string;
@@ -23,7 +35,7 @@ export class OutlineView extends ItemView {
     }
 
     getDisplayText(): string {
-        return "Quiet Outline";
+        return "Quiet outline";
     }
 
     getIcon(): string {
@@ -39,7 +51,7 @@ export class OutlineView extends ItemView {
         this.vueApp = createApp(Outline);
         this.vueApp.provide("plugin", this.plugin);
         this.vueApp.provide("container", mountPoint);
-        this.vueInstance = this.vueApp.mount(mountPoint) as InstanceType<typeof Outline>;
+        this.vueInstance = this.vueApp.mount(mountPoint) as unknown as OutlineVueInstance;
 
         this.plugin.outlineView = this;
     }
@@ -57,7 +69,7 @@ export class OutlineView extends ItemView {
                 return;
             }
             this.pendingKey = "G";
-            activeWindow.setTimeout(() => (this.pendingKey = undefined), 500);
+            window.setTimeout(() => (this.pendingKey = undefined), 500);
         });
         tree.register([], "Z", () => {
             if (this.pendingKey === "Z") {
@@ -66,7 +78,7 @@ export class OutlineView extends ItemView {
                 return;
             }
             this.pendingKey = "Z";
-            activeWindow.setTimeout(() => (this.pendingKey = undefined), 500);
+            window.setTimeout(() => (this.pendingKey = undefined), 500);
         });
         tree.register(["Shift"], "G", () => this.vueInstance.move("bottom"));
         tree.register([], "ArrowLeft", () => this.vueInstance.setExpand(false));
@@ -87,8 +99,8 @@ export class OutlineView extends ItemView {
         });
         tree.register(null, null, (evt) => {
             if (evt.key !== "Escape") return;
-            activeWindow.setTimeout(() => {
-                this.plugin.app.workspace.activeLeaf?.setEphemeralState({ focus: true });
+            window.setTimeout(() => {
+                this.leaf.setEphemeralState({ focus: true });
             });
         });
 

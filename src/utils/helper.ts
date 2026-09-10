@@ -1,7 +1,7 @@
 /** Try to parse a JSON string, returning a default value if parsing fails. */
 export function tryParseJson<Data>(jsonString: string, defaultData: Data): Data {
     try {
-        return JSON.parse(jsonString);
+        return JSON.parse(jsonString) as Data;
     } catch {
         return defaultData;
     }
