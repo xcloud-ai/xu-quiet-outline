@@ -266,7 +266,10 @@
     box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
-.view-content:has(.quiet-outline) {
+/* located heading 规则在 Outline.vue 的 style 块内维护（直选节点，避免 :has） */
+
+/* 大纲视图内容区去掉底部留白（用 Obsidian 原生 data-type 选择器，避免 :has） */
+.workspace-leaf-content[data-type="xu-quiet-outline"] .view-content {
     padding-bottom: 0px;
 }
 

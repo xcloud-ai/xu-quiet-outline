@@ -215,11 +215,9 @@ defineExpose({
     color: var(--nav-item-color);
 }
 
-.quiet-outline .n-tree-node-wrapper {
+.quiet-outline .n-tree-node-wrapper .n-tree-node.located {
+    background-color: var(--nav-item-background-active);
     border-radius: var(--nav-item-radius);
-    &:has(.n-tree-node.located) {
-        background-color: var(--nav-item-background-active);
-    }
 }
 
 /* adjust indent */
