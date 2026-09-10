@@ -28,7 +28,8 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          npm ci
+          # npm ci 会因跨平台可选依赖(oxc-parser 的 @emnapi/*, Windows 不写入 lock)校验失败, 改用 install
+          npm install --no-audit --no-fund
           npm run build
 
           ls -la
