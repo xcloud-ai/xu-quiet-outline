@@ -187,12 +187,13 @@ export default class QuietOutline extends Plugin {
     }
 
     async activateView() {
-        if (this.app.workspace.getLeavesOfType(VIEW_TYPE).length === 0) {
-            await this.app.workspace.getRightLeaf(false)?.setViewState({
-                type: VIEW_TYPE,
-                active: true,
-            });
-        }
-        await this.app.workspace.revealLeaf(this.app.workspace.getLeavesOfType(VIEW_TYPE)[0]);
+        // Obsidian 1.7.2+ defers sidebar views by default: an existing leaf may be
+        // unloaded, and revealLeaf alone won't restore it ("second open" bug).
+        // ensureSideLeaf creates the leaf if missing and reveals it, honoring deferral.
+        const leaf = await this.app.workspace.ensureSideLeaf(VIEW_TYPE, "right", {
+            active: true,
+            reveal: true,
+        });
+        await this.app.workspace.revealLeaf(leaf);
     }
 }
