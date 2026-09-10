@@ -101,7 +101,8 @@ export class OutlineView extends ItemView {
     }
 
     focusOn(part: "tree") {
-        const tree = this.contentEl.querySelector(".n-tree");
+        const tree = this.contentEl.querySelector<HTMLElement>(".n-tree");
+        if (!tree) return;
         tree.focus();
         this.scope = this.scopes.tree;
         this.vueInstance.selectVisible();
