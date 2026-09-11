@@ -2,6 +2,11 @@
 
 export default {
     "Settings for Quiet Outline.": "Quiet Outline 的设置页面",
+    setting_title: "XU Quiet Outline（大纲）",
+    setting_header_desc: "侧边栏大纲树：点击跳转、双向定位、层级滑条、拖拽改层级、双链标题着色与样式定制。",
+    Documentation: "使用文档",
+    "View the full manual on GitHub": "在 GitHub 查看完整使用说明",
+    GitHub: "GitHub",
     "Set Primary Color": "设置主颜色 明/暗",
     "Patch default color": "用设置覆盖默认主颜色",
     "Set Rainbow Line Color": "设置彩虹大纲线颜色",

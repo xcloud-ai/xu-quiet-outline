@@ -3,6 +3,11 @@
 export default {
     // Markdown navigator menu: change heading level（調整標題層級）
     "Change Level": "調整層級",
+    setting_title: "XU Quiet Outline（大綱）",
+    setting_header_desc: "側邊欄大綱樹：點擊跳轉、雙向定位、層級滑條、拖曳改層級、雙鏈標題著色與樣式定製。",
+    Documentation: "使用文檔",
+    "View the full manual on GitHub": "在 GitHub 查看完整使用說明",
+    GitHub: "GitHub",
     Increase: "增加",
     "Increase Recursively": "遞迴增加",
     Decrease: "減少",

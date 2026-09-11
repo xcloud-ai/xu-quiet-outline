@@ -62,6 +62,20 @@
     display: block;
 }
 
+/* 设置面板标准头描述文字 */
+.quiet-outline-hint {
+    margin: 0 0 8px 0;
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+}
+
+/* 设置面板分区分隔线 */
+.quiet-outline-divider {
+    border: none;
+    border-top: 1px solid var(--background-modifier-border);
+    margin: 16px 0;
+}
+
 .quiet-outline-tabs {
     display: flex;
     border-bottom: 1px solid var(--background-modifier-border);

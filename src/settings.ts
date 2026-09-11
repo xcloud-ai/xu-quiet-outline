@@ -36,17 +36,17 @@ export interface QuietOutlineSettings {
 }
 
 const DEFAULT_SETTINGS: QuietOutlineSettings = {
-    expand_level: "0",
+    expand_level: "2",
     auto_expand_ext: "only-expand",
-    drag_modify: false,
-    locate_by_cursor: false,
+    drag_modify: true,
+    locate_by_cursor: true,
     auto_scroll_into_view: true,
 
     // Style settings
-    patch_color: false,
+    patch_color: true,
     primary_color_light: "#18a058",
     primary_color_dark: "#63e2b7",
-    rainbow_line: false,
+    rainbow_line: true,
     rainbow_color_1: "#FD8B1F",
     rainbow_color_2: "#FFDF00",
     rainbow_color_3: "#07EB23",
@@ -74,7 +74,9 @@ class SettingTab extends PluginSettingTab {
         const { containerEl } = this;
 
         containerEl.empty();
-        new Setting(containerEl).setName(t("Settings for Quiet Outline.")).setHeading();
+        // 标准头：英文名（中文名）标题 + 1 行功能描述
+        containerEl.createEl("h2", { text: t("setting_title") });
+        containerEl.createDiv({ cls: "quiet-outline-hint", text: t("setting_header_desc") });
         // Create tab navigation
         const tabContainer = containerEl.createDiv({ cls: "quiet-outline-tabs" });
         const generalTab = tabContainer.createEl("button", {
@@ -102,6 +104,17 @@ class SettingTab extends PluginSettingTab {
         } else if (this.activeTab === "styles") {
             this.displayStyleSettings(contentContainer);
         }
+
+        // GitHub 使用文档（统一入口）
+        containerEl.createEl("hr", { cls: "quiet-outline-divider" });
+        new Setting(containerEl)
+            .setName(t("Documentation"))
+            .setDesc(t("View the full manual on GitHub"))
+            .addButton((btn) =>
+                btn.setButtonText(t("GitHub")).onClick(() => {
+                    window.open("https://github.com/xcloud-ai/xu-quiet-outline", "_blank");
+                }),
+            );
     }
 
     displayGeneralSettings(containerEl: HTMLElement): void {

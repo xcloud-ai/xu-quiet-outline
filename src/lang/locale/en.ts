@@ -10,6 +10,12 @@ export default {
     "Maximum level reached": "Maximum level reached",
     "Minimum level reached": "Minimum level reached",
     "Settings for Quiet Outline.": "Settings for Quiet Outline.",
+    setting_title: "XU Quiet Outline",
+    setting_header_desc:
+        "Sidebar outline tree: click to jump, two-way locate, level slider, drag to change level, wikilink heading coloring and style customization.",
+    Documentation: "Documentation",
+    "View the full manual on GitHub": "View the full manual on GitHub",
+    GitHub: "GitHub",
     "Set Primary Color": "Set Primary Color Light/Dark",
     "Patch default color": "Patch default color",
     "Set Rainbow Line Color": "Set Rainbow Line Color",
