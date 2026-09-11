@@ -75,7 +75,8 @@ class SettingTab extends PluginSettingTab {
 
         containerEl.empty();
         // 标准头：英文名（中文名）标题 + 1 行功能描述
-        containerEl.createEl("h2", { text: t("setting_title") });
+        // 官方审核要求：设置页标题用 Setting.setHeading()，禁止直接创建 h2 等 HTML 标题元素
+        new Setting(containerEl).setName(t("setting_title")).setHeading();
         containerEl.createDiv({ cls: "quiet-outline-hint", text: t("setting_header_desc") });
         // Create tab navigation
         const tabContainer = containerEl.createDiv({ cls: "quiet-outline-tabs" });
