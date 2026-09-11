@@ -8,6 +8,11 @@
     --custom-line-gap: 0px;
 }
 
+/* Wikilink headings rendered as colored plain text (no brackets, not clickable) */
+.quiet-outline-wikilink {
+    color: var(--link-color);
+}
+
 /* ConfirmModal: improve spacing/typography for a cleaner layout */
 .quiet-outline-confirm-modal {
     /* Slightly increase line-height for multi-line warnings */

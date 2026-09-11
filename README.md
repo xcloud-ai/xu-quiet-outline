@@ -23,6 +23,7 @@
 XU Quiet Outline is a lightweight outline plugin focused on reading and navigation, forked and trimmed from [Quiet Outline](https://github.com/guopenghui/obsidian-quiet-outline) (MIT).
 
 - Outline tree in sidebar with click-to-jump
+- Wikilink headings shown as colored plain text (no brackets, theme link color)
 - Two-way sync between editor scrolling / cursor and outline highlight
 - Default expanding level and 4 auto-expand modes
 - Level switch slider

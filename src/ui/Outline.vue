@@ -29,6 +29,7 @@
             block-line
             :indent="17"
             :data="data"
+            :render-label="renderLabel"
             :selected-keys="selectedKeys"
             :node-props="nodeProps"
             :keyboard="false"
@@ -57,6 +58,7 @@ import { useOutlineTheme } from "./use-theme";
 import { useOutlineDnd } from "./use-dnd";
 import { useOutlineExpand } from "./use-expand";
 import { useOutlineController } from "./use-controller";
+import { renderLabel } from "./use-tree";
 
 const plugin = inject<QuietOutline>("plugin")!;
 const container = inject<HTMLElement>("container")!;

@@ -1,6 +1,6 @@
 import { type Heading, store } from "@/store";
-import { computed, ref } from "vue";
-import type { HTMLAttributes, ComputedRef, Ref } from "vue";
+import { computed, h, ref } from "vue";
+import type { HTMLAttributes, ComputedRef, Ref, VNodeChild } from "vue";
 import type { TreeOptionX } from "./types";
 import type { TreeOption } from "naive-ui";
 import { getPathFromArr, makeKey, keyToIndex } from "./utils";
@@ -165,6 +165,33 @@ export function useOutlineTree({
 function makeTree(headers: Heading[]): TreeOptionX[] {
     const tree: TreeOptionX[] = arrToTree(headers);
     return tree;
+}
+
+// render wikilinks in headings as colored plain text (no brackets, not clickable)
+const WIKILINK_RE = /\[\[([^\[\]]+?)\]\]/g;
+
+export function renderLabel({ option }: { option: TreeOption }): VNodeChild {
+    const title = option.label;
+    if (typeof title !== "string" || !title.contains("[[") || !title.contains("]]")) {
+        return title ?? "";
+    }
+    const children: VNodeChild[] = [];
+    let last = 0;
+    for (const m of title.matchAll(WIKILINK_RE)) {
+        const idx = m.index ?? 0;
+        if (idx > last) {
+            children.push(title.slice(last, idx));
+        }
+        const inner = m[1];
+        const sep = inner.indexOf("|");
+        const text = sep >= 0 ? inner.slice(sep + 1) || inner.slice(0, sep) : inner;
+        children.push(h("span", { class: "quiet-outline-wikilink" }, text));
+        last = idx + m[0].length;
+    }
+    if (last < title.length) {
+        children.push(title.slice(last));
+    }
+    return children;
 }
 
 function arrToTree(headers: Heading[]): TreeOptionX[] {
