@@ -129,6 +129,11 @@ export default {
     "This will delete heading:": "即将删除标题：",
     "This will modify the note content. Continue?": "此操作会修改笔记内容，是否继续？",
 
+    // Drag & drop notices
+    "Cannot move heading into its own subtree": "不能将标题移动到它自己的子标题内",
+    "Outline changed while dragging, move aborted": "拖拽时文档已变化，本次移动已取消",
+    "Failed to move heading": "移动标题失败",
+
     // New settings
     "Font Size": "字体大小",
     "Custom font size for outline text (e.g., 14px, 1rem)":

@@ -131,6 +131,11 @@ export default {
     "This will delete heading:": "This will delete heading:",
     "This will modify the note content. Continue?": "This will modify the note content. Continue?",
 
+    // Drag & drop notices
+    "Cannot move heading into its own subtree": "Cannot move heading into its own subtree",
+    "Outline changed while dragging, move aborted": "Outline changed while dragging, move aborted",
+    "Failed to move heading": "Failed to move heading",
+
     // Text style settings
     "Font Size": "Font Size",
     "Custom font size for outline text (e.g., 14px, 1rem)":

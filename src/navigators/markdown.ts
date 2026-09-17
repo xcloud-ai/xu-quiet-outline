@@ -1,11 +1,18 @@
-import { MarkdownView, debounce, type Pos } from "obsidian";
+import { MarkdownView, Notice, debounce, type Pos, type TFile } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { editorEvent } from "@/editor-ext";
 import type QuietOutline from "@/plugin";
 import { store, type Heading } from "@/store";
+import { t } from "@/lang/helper";
 import { Nav } from "./base";
 import { calcModifies } from "@/utils/diff";
-import { parseMarkdown, stringifySection, moveHeading } from "@/utils/md-process";
+import {
+    parseMarkdown,
+    stringifySection,
+    moveHeading,
+    findSection,
+    type Section,
+} from "@/utils/md-process";
 import { eventBus } from "@/utils/event-bus";
 
 let plugin: QuietOutline;
@@ -129,14 +136,58 @@ export class MarkDownNav extends Nav {
         return this.view.file?.path ?? "";
     }
 
+    handlesFile(file: TFile): boolean {
+        return this.view.file === file;
+    }
+
     onExpandKeysChange(_path: string, _keys: string[]) {}
 
     async handleDrop(from: number, to: number, position: "before" | "after" | "inside") {
-        const structure = await parseMarkdown(this.view.data, this.view.app);
-        moveHeading(structure, from, to, position);
+        const file = this.view.file;
+        if (!file) return;
 
-        if (!this.view.file) return;
-        await plugin.app.vault.modify(this.view.file, stringifySection(structure));
+        try {
+            // flush unsaved editor input first, so the write below can't lose it
+            await this.view.save();
+
+            // re-read the just-saved content: view.data may still be stale
+            const data = await plugin.app.vault.read(file);
+            const structure = await parseMarkdown(data, this.view.app);
+
+            // the outline may have changed while dragging; stale indexes
+            // would move the wrong block, so verify before writing
+            if (!verifyHeadingIndex(structure, from) || !verifyHeadingIndex(structure, to)) {
+                throw new DropAbortedError(t("Outline changed while dragging, move aborted"));
+            }
+
+            if (!moveHeading(structure, from, to, position)) {
+                throw new DropAbortedError(t("Cannot move heading into its own subtree"));
+            }
+
+            await plugin.app.vault.modify(file, stringifySection(structure));
+        } catch (e) {
+            if (e instanceof DropAbortedError) {
+                new Notice(e.message);
+            } else {
+                console.error("[xu-quiet-outline] failed to move heading:", e);
+                new Notice(`${t("Failed to move heading")}: ${String(e)}`);
+            }
+        }
+    }
+}
+
+class DropAbortedError extends Error {}
+
+// from/to come from store.headers (metadataCache); make sure the freshly
+// parsed structure still matches what the user grabbed in the outline
+function verifyHeadingIndex(root: Section, index: number): boolean {
+    const header = store.headers[index] as MarkdownHeading | undefined;
+    if (!header) return false;
+    try {
+        const [, section] = findSection(root, index);
+        return section.heading === header.title && section.headingLevel === header.level;
+    } catch {
+        return false;
     }
 }
 

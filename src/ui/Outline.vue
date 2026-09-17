@@ -37,15 +37,16 @@
             :on-update:expanded-keys="expand"
             :key="keyOfTree"
             :draggable="store.dragModify"
+            :virtual-scroll="true"
             @drop="onDrop"
-            :allow-drop="() => plugin.navigator.canDrop"
+            :allow-drop="allowDrop"
         />
     </NConfigProvider>
 </template>
 
 <script setup lang="ts">
 import { ref, inject } from "vue";
-import { NTree, NSlider, NConfigProvider } from "naive-ui";
+import { NTree, NSlider, NConfigProvider, type TreeOption } from "naive-ui";
 
 import { store } from "@/store";
 import { t } from "@/lang/helper";
@@ -59,6 +60,7 @@ import { useOutlineDnd } from "./use-dnd";
 import { useOutlineExpand } from "./use-expand";
 import { useOutlineController } from "./use-controller";
 import { renderLabel } from "./use-tree";
+import { nodeToIndex, isAncestorOf } from "./utils";
 
 const plugin = inject<QuietOutline>("plugin")!;
 const container = inject<HTMLElement>("container")!;
@@ -84,9 +86,19 @@ const { data, nodeProps, locateIdx, resetLocated, selectedKeys } = useOutlineTre
     level,
     expanded,
     modifyExpandKeys,
+    tree,
 });
 
 const { onDrop } = useOutlineDnd(container, plugin);
+
+// reject dropping a heading into its own subtree (would delete its content)
+function allowDrop({ node }: { dropPosition: string; node: TreeOption; phase: string }): boolean {
+    if (!plugin.navigator.canDrop) return false;
+    const from = store.draggingIdx;
+    if (from < 0) return false;
+    const to = nodeToIndex(node);
+    return from !== to && !isAncestorOf(from, to);
+}
 
 // to-bottom button
 async function toBottom() {
@@ -234,7 +246,7 @@ defineExpose({
     > *:last-child {
     margin-right: 8px;
 }
-.n-tree-node-switcher__icon {
+.quiet-outline .n-tree-node-switcher__icon {
     display: flex;
     align-items: center;
     justify-content: center;

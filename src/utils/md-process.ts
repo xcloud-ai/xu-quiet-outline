@@ -11,11 +11,15 @@ type Content = {
     preContent: string;
     children: Section[];
 };
-type Section = {
+export type Section = {
     id: number;
     heading: string;
     headingLevel: number; // 1-based
     headingExpaned: boolean;
+    // original heading line(s), e.g. "## T ##" or setext "T\n==="
+    // preserved as-is when the level doesn't change, so a move never
+    // silently rewrites untouched headings
+    rawLine?: string;
     content: Content;
     type: "section";
 };
@@ -58,6 +62,7 @@ export async function parseMarkdown(text: string, app: App): Promise<Section> {
                 headingLevel: headings[headingIndex].level,
                 headingExpaned: false,
                 id: headingIndex,
+                rawLine: text.slice(section.position.start.offset, section.position.end.offset),
                 content: {
                     preContent: "",
                     children: [],
@@ -88,9 +93,16 @@ export function moveHeading(
     fromNo: number,
     toNo: number,
     position: "before" | "after" | "inside",
-) {
+): boolean {
     const [fromParent, from] = findSection(root, fromNo);
     const [toParent, to] = findSection(root, toNo);
+
+    // reject dropping a section onto itself or into its own subtree,
+    // otherwise the removal below would delete the whole moved block
+    if (from === to || containsSection(from, to)) {
+        return false;
+    }
+
     const newFrom = structuredClone(from);
 
     switch (position) {
@@ -108,6 +120,7 @@ export function moveHeading(
             break;
     }
     fromParent.content.children.splice(fromParent.content.children.indexOf(from), 1);
+    return true;
 }
 
 export function removeHeading(root: Section, toRemoveNo: number) {
@@ -132,6 +145,12 @@ function findSectionIn(root: Section, parent: Section, id: number): [Section, Se
     }
 }
 
+// true if node is inside ancestor's subtree (or equals ancestor)
+function containsSection(ancestor: Section, node: Section): boolean {
+    if (ancestor === node) return true;
+    return ancestor.content.children.some((child) => containsSection(child, node));
+}
+
 export function visitSection(root: Section, fn: (section: Section) => void) {
     fn(root);
 
@@ -145,14 +164,17 @@ function stringifyContent(content: Content): string {
 }
 
 export function stringifySection(section: Section): string {
-    const heading = "#".repeat(section.headingLevel) + " " + section.heading;
+    // keep the original line as-is unless the level changed (rawLine cleared)
+    const heading = section.rawLine ?? "#".repeat(section.headingLevel) + " " + section.heading;
     const content = stringifyContent(section.content);
 
     return section.id < 0 ? content : `${heading}\n${content}`;
 }
 
 function modifyHeadingLevel(section: Section, delta: number) {
-    section.headingLevel += delta;
+    // clamp to valid ATX levels 1-6, never emit `#######`
+    section.headingLevel = Math.min(6, Math.max(1, section.headingLevel + delta));
+    section.rawLine = undefined; // level changed: regenerate the heading line
     section.content.children.forEach((child) => {
         modifyHeadingLevel(child, delta);
     });

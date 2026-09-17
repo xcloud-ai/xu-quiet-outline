@@ -2,7 +2,7 @@ import { type Heading, store } from "@/store";
 import { computed, h, ref } from "vue";
 import type { HTMLAttributes, ComputedRef, Ref, VNodeChild } from "vue";
 import type { TreeOptionX } from "./types";
-import type { TreeOption } from "naive-ui";
+import type { TreeOption, NTree } from "naive-ui";
 import { getPathFromArr, makeKey, keyToIndex } from "./utils";
 import { debounce, Menu } from "obsidian";
 import { normal, separator, setupMenu } from "@/utils/menu";
@@ -23,6 +23,7 @@ type OutlineTreeOptions = {
     level: Ref<number>;
     expanded: Ref<string[]>;
     modifyExpandKeys: (newKeys: string[], mode: "add" | "remove" | "replace") => void;
+    tree?: Ref<InstanceType<typeof NTree> | undefined>;
 };
 
 export function useOutlineTree({
@@ -30,6 +31,7 @@ export function useOutlineTree({
     container,
     expanded,
     modifyExpandKeys,
+    tree,
 }: OutlineTreeOptions) {
     // prepare data for tree component
     const data = computed(() => {
@@ -53,6 +55,12 @@ export function useOutlineTree({
                     behavior: "smooth",
                     container: "nearest",
                 });
+            } else {
+                // virtual scrolling: unrendered nodes can only be reached via the tree API
+                const header = store.headers[index];
+                if (header) {
+                    tree?.value?.scrollTo({ key: makeKey(header.level, index) });
+                }
             }
         },
         100,

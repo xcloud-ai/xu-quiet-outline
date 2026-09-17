@@ -56,6 +56,7 @@ export const store = reactive({
     currentEditingKey: "",
     modifyKeys: {} as ModifyKeys,
     dragModify: false,
+    draggingIdx: -1, // outline index of the heading being dragged (native DnD)
     refreshTree: () => {},
     theme: {
         patchColor: false,

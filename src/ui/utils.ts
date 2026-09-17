@@ -16,6 +16,18 @@ export function nodeToIndex(node: TreeOption | string): number {
     return parseInt(node.split("-")[2]);
 }
 
+// true if headings[from] is an ancestor of headings[to]
+// (i.e. to sits inside from's subtree)
+export function isAncestorOf(from: number, to: number): boolean {
+    const { headers } = store;
+    const base = headers[from]?.level;
+    if (base === undefined || from >= to) return false;
+    for (let i = from + 1; i <= to; i++) {
+        if (headers[i].level <= base) return false;
+    }
+    return true;
+}
+
 export function isLeaf(idx: number) {
     return (
         idx === store.headers.length - 1 || store.headers[idx + 1].level <= store.headers[idx].level

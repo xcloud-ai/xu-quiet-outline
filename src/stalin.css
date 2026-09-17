@@ -259,7 +259,7 @@
 /* ===================== */
 /* 对不同级别标题进行设置 */
 /* ===================== */
-.n-tree .n-tree-node-switcher {
+.quiet-outline .n-tree .n-tree-node-switcher {
     height: 0px;
 }
 
@@ -275,13 +275,15 @@
 
 /* location */
 
-.n-tree.n-tree--block-line
+.quiet-outline .n-tree.n-tree--block-line
     .n-tree-node-wrapper
     .n-tree-node:not(.n-tree-node--disabled).n-tree-node--selected {
     background-color: transparent;
 }
 
-.n-tree.n-tree--block-line:focus .n-tree-node:not(.n-tree-node--disabled).n-tree-node--selected {
+.quiet-outline
+    .n-tree.n-tree--block-line:focus
+    .n-tree-node:not(.n-tree-node--disabled).n-tree-node--selected {
     box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
@@ -299,6 +301,8 @@
 /* 固定功能栏 */
 .quiet-outline {
     height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .quiet-outline .n-config-provider {
@@ -309,10 +313,14 @@
 .quiet-outline .n-tree {
     overflow: auto;
     padding-inline: 2px;
+    /* constrain height so (virtual) scrolling happens inside the tree,
+       keeping the function bar and slider visible */
+    flex: 1;
+    min-height: 0;
 }
 
 /*remove 'no data'*/
-.n-tree__empty {
+.quiet-outline .n-tree__empty {
     display: none;
 }
 

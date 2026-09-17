@@ -1,4 +1,4 @@
-import { type Component, type EventRef, Menu } from "obsidian";
+import { type Component, type EventRef, type Menu, type TFile } from "obsidian";
 import type QuietOutline from "@/plugin";
 import { store, type Heading } from "@/store";
 import type { TreeOption } from "naive-ui";
@@ -89,6 +89,11 @@ export abstract class Nav {
     }
     getDefaultLevel() {
         return parseInt(this.plugin.settings.expand_level);
+    }
+    // whether this navigator tracks the given file (used to filter
+    // metadataCache change events)
+    handlesFile(_file: TFile): boolean {
+        return false;
     }
     getPath() {
         return "";

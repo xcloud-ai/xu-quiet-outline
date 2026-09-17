@@ -18,6 +18,7 @@ export function useOutlineDnd(container: HTMLElement, plugin: QuietOutline) {
             }
 
             const no = parseInt(target.id.slice(3));
+            store.draggingIdx = no;
             const heading = store.headers[no];
 
             e.dataTransfer?.setData("text/plain", heading.title);
@@ -30,6 +31,10 @@ export function useOutlineDnd(container: HTMLElement, plugin: QuietOutline) {
                 // currently only markdownNav allows drop, and its view exists
                 file: (plugin.navigator as MarkDownNav).view.file,
             });
+        });
+
+        container.addEventListener("dragend", () => {
+            store.draggingIdx = -1;
         });
     });
 

@@ -76,8 +76,11 @@ export default class QuietOutline extends Plugin {
         );
 
         this.registerEvent(
-            this.app.metadataCache.on("changed", () => {
-                this.refresh("file-modify");
+            this.app.metadataCache.on("changed", (file) => {
+                // only react to the file shown in the outline, ignore the rest
+                if (this.navigator.handlesFile(file)) {
+                    this.refresh("file-modify");
+                }
             }),
         );
 
