@@ -94,10 +94,12 @@ export default class QuietOutline extends Plugin {
             }),
         );
 
-        // 启动时序加固：vault 索引完成后补刷所有面板（挂载瞬间缓存可能未就绪）
+        // 启动时序加固：面板挂载可能早于 vault 索引完成，getHeaders 会读到磁盘上的旧缓存
+        // （文件在 Obsidian 关闭期间被外部脚本/同步修改 → 尾部新增标题缺失）。
+        // resolved 后重拉标题；仅在确有变化时刷新面板，避免高频 resolved 重置用户展开状态
         this.registerEvent(
             this.app.metadataCache.on("resolved", () => {
-                this.forEachOutlineView((view) => view.vueInstance.onLeafChange());
+                void this.reinitHeaders();
             }),
         );
 
@@ -177,6 +179,24 @@ export default class QuietOutline extends Plugin {
         // to avoid animation-in-progress stuck
         // https://github.com/tusen-ai/naive-ui/issues/5217
         const newHeaders = await this.navigator.getHeaders();
+        store.headers = newHeaders;
+        this.forEachOutlineView((view) => view.vueInstance.onLeafChange());
+    }
+
+    /** resolved 后重拉标题：修复启动期读到旧缓存导致新增/尾部标题缺失 */
+    private async reinitHeaders(): Promise<void> {
+        const newHeaders = await this.navigator.getHeaders();
+        const oldHeaders = store.headers;
+        const changed =
+            newHeaders.length !== oldHeaders.length ||
+            newHeaders.some(
+                (h, i) =>
+                    h.title !== oldHeaders[i]!.title ||
+                    h.level !== oldHeaders[i]!.level ||
+                    (h as { line?: number }).line !== (oldHeaders[i] as { line?: number }).line,
+            );
+        if (!changed) return;
+
         store.headers = newHeaders;
         this.forEachOutlineView((view) => view.vueInstance.onLeafChange());
     }
