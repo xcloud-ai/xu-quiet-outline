@@ -123,6 +123,9 @@ export class OutlineView extends ItemView {
     async onClose() {}
     onunload(): void {
         this.vueApp.unmount();
-        this.plugin.outlineView = null;
+        // 多面板并存时，仅当自己是当前注册的面板才清空引用，避免误清其他面板
+        if (this.plugin.outlineView === this) {
+            this.plugin.outlineView = null;
+        }
     }
 }

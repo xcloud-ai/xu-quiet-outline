@@ -82,7 +82,7 @@ function init(plugin: QuietOutline) {
     store.dark = activeDocument.body.hasClass("theme-dark");
     store.dragModify = settings.drag_modify;
     store.refreshTree = () => {
-        plugin.outlineView?.vueInstance.forceRemakeTree();
+        plugin.forEachOutlineView((view) => view.vueInstance.forceRemakeTree());
         app.workspace.trigger("layout-change");
     };
     store.theme.patchColor = settings.patch_color;

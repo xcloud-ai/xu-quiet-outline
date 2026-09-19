@@ -68,7 +68,7 @@ export class MarkDownNav extends Nav {
         const state = { line, cursor };
 
         void this.plugin.startJumping();
-        plugin.outlineView?.vueInstance.onPosChange(index);
+        plugin.forEachOutlineView((view) => view.vueInstance.onPosChange(index));
 
         window.setTimeout(() => {
             this.view.app.workspace.setActiveLeaf(this.view.leaf, { focus: true });
@@ -88,7 +88,7 @@ export class MarkDownNav extends Nav {
         const state = { line };
 
         void this.plugin.startJumping();
-        plugin.outlineView?.vueInstance.onPosChange(index);
+        plugin.forEachOutlineView((view) => view.vueInstance.onPosChange(index));
 
         window.setTimeout(() => {
             this.view.setEphemeralState(state);
@@ -208,7 +208,7 @@ function handleCursorChange(docChanged: boolean) {
         const index = nearestHeading(current);
         if (index === undefined) return;
 
-        plugin.outlineView?.vueInstance.onPosChange(index);
+        plugin.forEachOutlineView((view) => view.vueInstance.onPosChange(index));
     }
 }
 
@@ -322,5 +322,5 @@ function _handleScroll(evt: Event) {
     const index = nearestHeading(current);
     if (index === undefined) return;
 
-    plugin.outlineView?.vueInstance.onPosChange(index);
+    plugin.forEachOutlineView((view) => view.vueInstance.onPosChange(index));
 }

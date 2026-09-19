@@ -17,6 +17,16 @@ export default class QuietOutline extends Plugin {
     jumping = true;
     outlineView: OutlineView | null = null;
 
+    /** 遍历所有已挂载的大纲面板（插件更新后可能残留多个，均需同步刷新） */
+    forEachOutlineView(cb: (view: OutlineView) => void) {
+        for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
+            const view = leaf.view;
+            if (view instanceof OutlineView && view.vueInstance) {
+                cb(view);
+            }
+        }
+    }
+
     allow_scroll = true;
     block_scroll!: () => void;
     allow_cursor_change = true;
@@ -84,6 +94,13 @@ export default class QuietOutline extends Plugin {
             }),
         );
 
+        // 启动时序加固：vault 索引完成后补刷所有面板（挂载瞬间缓存可能未就绪）
+        this.registerEvent(
+            this.app.metadataCache.on("resolved", () => {
+                this.forEachOutlineView((view) => view.vueInstance.onLeafChange());
+            }),
+        );
+
         this.registerEvent(
             this.app.workspace.on("active-leaf-change", async (leaf) => {
                 this.prevView = leaf?.view || null;
@@ -112,7 +129,9 @@ export default class QuietOutline extends Plugin {
 
         this.registerEvent(
             eventBus.on("active-fileview-change", async (view) => {
-                if (this.outlineView?.leaf?.group) {
+                // 所有面板都在主编辑区 tab 组时才跳过（保持原语义：主区面板不随文件切换自动刷新）
+                const outlineLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
+                if (outlineLeaves.length > 0 && outlineLeaves.every((leaf) => leaf.group)) {
                     return;
                 }
 
@@ -159,7 +178,7 @@ export default class QuietOutline extends Plugin {
         // https://github.com/tusen-ai/naive-ui/issues/5217
         const newHeaders = await this.navigator.getHeaders();
         store.headers = newHeaders;
-        this.outlineView?.vueInstance.onLeafChange();
+        this.forEachOutlineView((view) => view.vueInstance.onLeafChange());
     }
 
     onunload(): void {
@@ -190,6 +209,13 @@ export default class QuietOutline extends Plugin {
     }
 
     async activateView() {
+        // 插件更新/重载后 workspace 可能残留多个大纲面板（旧面板未随卸载销毁 + 新面板被创建），
+        // 保留最新一个并移除其余，避免出现不再接收更新的"僵尸面板"
+        const staleLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
+        while (staleLeaves.length > 1) {
+            staleLeaves.shift()?.detach();
+        }
+
         // Obsidian 1.7.2+ defers sidebar views by default: an existing leaf may be
         // unloaded, and revealLeaf alone won't restore it ("second open" bug).
         // ensureSideLeaf creates the leaf if missing and reveals it, honoring deferral.
