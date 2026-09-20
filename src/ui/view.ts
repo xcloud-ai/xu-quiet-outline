@@ -1,12 +1,12 @@
 // 大纲面板视图（vanilla DOM 版，替代 Vue Outline.vue + use-* 组合层）
-import { ItemView, Menu, debounce, type WorkspaceLeaf } from "obsidian";
+import { ItemView, Menu, debounce, setIcon, type WorkspaceLeaf } from "obsidian";
 import type QuietOutline from "@/plugin";
 import { store } from "@/store";
 import { t } from "@/lang/helper";
 import { applyTheme } from "./theme";
 import { ExpandState, ancestorsOf, writeMemory } from "./expand";
 import { TreeRenderer } from "./tree";
-import { iconToBottom, iconReset } from "./icons";
+import { ICON_TO_BOTTOM, ICON_RESET } from "./icons";
 
 export const VIEW_TYPE = "xu-quiet-outline";
 
@@ -69,7 +69,7 @@ export class OutlineView extends ItemView {
 
         // 双保险：面板延迟挂载导致首帧 measureRow 测高为 0 时，下一帧补测重绘
         // （ResizeObserver 之外再兜一次，覆盖容器尺寸已非 0 但样式刚应用的时序）
-        activeWindow.requestAnimationFrame(() => this.renderer?.remeasureIfNeeded());
+        window.requestAnimationFrame(() => this.renderer?.remeasureIfNeeded());
 
         this.plugin.outlineView = this;
 
@@ -90,14 +90,14 @@ export class OutlineView extends ItemView {
             cls: "qo-icon-btn",
             attr: { title: t("To Bottom"), "aria-label": t("To Bottom") },
         });
-        toBottom.innerHTML = iconToBottom;
+        setIcon(toBottom, ICON_TO_BOTTOM);
         toBottom.addEventListener("click", () => this.plugin.navigator.toBottom());
 
         const reset = bar.createEl("button", {
             cls: "qo-icon-btn",
             attr: { title: t("Reset"), "aria-label": t("Reset") },
         });
-        reset.innerHTML = iconReset;
+        setIcon(reset, ICON_RESET);
         reset.addEventListener("click", () => this.resetPanel());
 
         this.searchEl = bar.createEl("input", {
@@ -174,7 +174,12 @@ export class OutlineView extends ItemView {
     onLeafChange() {
         // 保存上一个文件的展开记忆（含滑杆级别）
         if (this.currentPath) {
-            writeMemory(this.currentPath, [...this.expand.keys], this.expand.level);
+            writeMemory(
+                this.plugin.app,
+                this.currentPath,
+                [...this.expand.keys],
+                this.expand.level,
+            );
         }
         this.currentPath = this.plugin.navigator.getPath();
         this.expand.restore(this.currentPath);
@@ -242,7 +247,7 @@ export class OutlineView extends ItemView {
         // headers 为空（启动竞态/dummy 导航）时禁止写记忆，
         // 否则空展开集合会污染该文件，下次启动被恢复为 0 级
         if (path && store.headers.length > 0) {
-            writeMemory(path, [...this.expand.keys], this.expand.level);
+            writeMemory(this.plugin.app, path, [...this.expand.keys], this.expand.level);
         }
     }
 

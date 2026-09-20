@@ -199,6 +199,8 @@
 }
 
 .quiet-outline .qo-switcher svg {
+    width: 14px;
+    height: 14px;
     transition: transform 0.15s ease;
 }
 

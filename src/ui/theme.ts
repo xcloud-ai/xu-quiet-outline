@@ -7,7 +7,8 @@ export function applyTheme(container: HTMLElement) {
 
     // 彩虹缩进线：开启时用自定义 5 色，关闭时统一用 Obsidian 原生缩进线颜色
     const line = (hex: string) => `rgba(${hexToRGB(hex)}, 0.6)`;
-    const colors = theme.rainbowLine
+    const nativeGuide = "var(--nav-indentation-guide-color)";
+    const colors: string[] = theme.rainbowLine
         ? [
               line(theme.rainbowColor1),
               line(theme.rainbowColor2),
@@ -15,7 +16,7 @@ export function applyTheme(container: HTMLElement) {
               line(theme.rainbowColor4),
               line(theme.rainbowColor5),
           ]
-        : Array(5).fill("var(--nav-indentation-guide-color)");
+        : [nativeGuide, nativeGuide, nativeGuide, nativeGuide, nativeGuide];
     colors.forEach((c, i) => container.style.setProperty(`--qo-line-${i + 1}`, c));
 
     // 字体五项设置

@@ -1,7 +1,8 @@
 // 树渲染器：扁平可见列表 + 固定行高虚拟滚动 + keydiff DOM 复用 + 事件委托
 // 性能目标：文件切换/编辑只做 O(标题数) 的列表重算 + O(视口行数) 的 DOM 增删
+import { setIcon } from "obsidian";
 import { store } from "@/store";
-import { iconChevron } from "./icons";
+import { ICON_CHEVRON } from "./icons";
 
 export interface VisibleRow {
     idx: number; // header index
@@ -104,12 +105,14 @@ export class TreeRenderer {
      * 由 ResizeObserver / rAF 在布局完成后补测，绝不能把 0 落成 8px 导致行堆叠。
      */
     measureRow(): boolean {
-        const probe = createEl("div", {
+        // 用真实行结构实测高度（与 createRow/fillContent 保持同构）
+        const probe = this.viewport.createDiv({
             cls: "qo-row qo-measure",
             attr: { style: "visibility:hidden" },
         });
-        probe.innerHTML = `<div class="qo-content"><span class="qo-switcher">${iconChevron}</span><span class="qo-label">Ag</span></div>`;
-        this.viewport.appendChild(probe);
+        const content = probe.createDiv({ cls: "qo-content" });
+        setIcon(content.createSpan({ cls: "qo-switcher" }), ICON_CHEVRON);
+        content.createSpan({ cls: "qo-label", text: "Ag" });
         const h = probe.offsetHeight;
         probe.remove();
         if (h <= 0) return false;
@@ -192,9 +195,11 @@ export class TreeRenderer {
     // ============ 行 DOM ============
 
     private createRow(row: VisibleRow, pos: number): HTMLElement {
-        const el = createEl("div", { cls: "qo-row", attr: { "data-idx": String(row.idx) } });
-        el.innerHTML = `<div class="qo-content"></div>`;
-        const content = el.firstElementChild as HTMLElement;
+        const el = this.viewport.createDiv({
+            cls: "qo-row",
+            attr: { "data-idx": String(row.idx) },
+        });
+        const content = el.createDiv({ cls: "qo-content" });
         this.fillContent(content, row);
         this.applyRowState(el, row);
         el.style.top = `${pos * this.rowHeight}px`;
@@ -215,7 +220,7 @@ export class TreeRenderer {
         // 展开箭头（叶子节点无箭头，文字直接开始——与核心大纲一致）
         const switcher = content.createSpan({ cls: "qo-switcher" });
         if (row.hasChildren) {
-            switcher.innerHTML = iconChevron;
+            setIcon(switcher, ICON_CHEVRON);
             if (row.expanded) switcher.addClass("is-open");
         }
 
@@ -401,7 +406,7 @@ export function buildLabel(el: HTMLElement, title: string) {
     let last = 0;
     for (const m of title.matchAll(WIKILINK_RE)) {
         const idx = m.index ?? 0;
-        if (idx > last) el.appendChild(document.createTextNode(title.slice(last, idx)));
+        if (idx > last) el.appendText(title.slice(last, idx));
         const inner = m[1];
         const sep = inner.indexOf("|");
         const text = sep >= 0 ? inner.slice(sep + 1) || inner.slice(0, sep) : inner;
@@ -409,6 +414,6 @@ export function buildLabel(el: HTMLElement, title: string) {
         last = idx + m[0].length;
     }
     if (last < title.length) {
-        el.appendChild(document.createTextNode(title.slice(last)));
+        el.appendText(title.slice(last));
     }
 }

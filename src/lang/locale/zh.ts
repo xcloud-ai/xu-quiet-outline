@@ -173,6 +173,8 @@ export default {
     "Highlighting headings auto scroll into view": "高亮标题时自动滚动到可见区域",
     "Style Settings": "样式设置",
     "Override primary color": "覆盖主色",
+    "Primary color (light mode)": "主色（浅色模式）",
+    "Primary color (dark mode)": "主色（深色模式）",
     "This setting is used to override the primary color of the theme": "此设置用于覆盖主题的主色调（左浅色/右深色）",
     "Rainbow line color": "彩虹缩进线",
     "The color of the line can be customized by rainbow": "用彩虹色自定义缩进线颜色",

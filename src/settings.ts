@@ -297,6 +297,130 @@ class SettingTab extends PluginSettingTab {
             }),
         );
     }
+
+    /**
+     * Obsidian 1.13+ 声明式设置（官方双支持 Path B：旧版本忽略此方法，继续使用 display()）。
+     * 作用：让全部设置进入 1.13+ 的全局设置搜索索引；返回纯字面量结构，
+     * 不依赖 1.13 才有的类型定义（minAppVersion 为 1.8.7）。
+     */
+    getSettingDefinitions() {
+        const levelOptions: Record<string, string> = {};
+        for (let i = 0; i <= 5; i++) levelOptions[String(i)] = String(i);
+
+        return [
+            {
+                type: "group",
+                heading: t("General Settings"),
+                items: [
+                    {
+                        name: t("Default expanding level"),
+                        desc: t("Default expanding level desc"),
+                        control: {
+                            type: "dropdown",
+                            key: "expand_level",
+                            defaultValue: "2",
+                            options: levelOptions,
+                        },
+                    },
+                    {
+                        name: t("Auto expand mode"),
+                        desc: t("Control the expansion behavior when a leaf is changed"),
+                        control: {
+                            type: "dropdown",
+                            key: "auto_expand_ext",
+                            defaultValue: "only-expand",
+                            options: {
+                                "only-expand": t("Only Expand"),
+                                "expand-and-collapse-rest-to-default": t(
+                                    "Expand and collapse the rest to default level",
+                                ),
+                                "expand-and-collapse-rest-to-setting": t(
+                                    "Expand and collapse the rest to the level below",
+                                ),
+                                disable: t("Disable"),
+                            },
+                        },
+                    },
+                    {
+                        name: t("Drag to modify"),
+                        desc: t(
+                            "Allow dragging headings in the outline to change their level and position. This will modify the note content.",
+                        ),
+                        control: { type: "toggle", key: "drag_modify" },
+                    },
+                    {
+                        name: t("Locate by cursor"),
+                        desc: t("Highlight the nearest heading by the cursor"),
+                        control: { type: "toggle", key: "locate_by_cursor" },
+                    },
+                    {
+                        name: t("Auto scroll into view"),
+                        desc: t("Highlighting headings auto scroll into view"),
+                        control: { type: "toggle", key: "auto_scroll_into_view" },
+                    },
+                ],
+            },
+            {
+                type: "group",
+                heading: t("Style Settings"),
+                items: [
+                    {
+                        name: t("Override primary color"),
+                        desc: t("This setting is used to override the primary color of the theme"),
+                        control: { type: "toggle", key: "patch_color" },
+                    },
+                    {
+                        name: t("Primary color (light mode)"),
+                        control: { type: "color", key: "primary_color_light" },
+                    },
+                    {
+                        name: t("Primary color (dark mode)"),
+                        control: { type: "color", key: "primary_color_dark" },
+                    },
+                    {
+                        name: t("Rainbow line color"),
+                        desc: t("The color of the line can be customized by rainbow"),
+                        control: { type: "toggle", key: "rainbow_line" },
+                    },
+                    ...[1, 2, 3, 4, 5].map((i) => ({
+                        name: `${t("Indent level")} ${i}`,
+                        control: { type: "color", key: `rainbow_color_${i}` },
+                    })),
+                    {
+                        name: t("Font size"),
+                        control: { type: "text", key: "font_size" },
+                    },
+                    {
+                        name: t("Font family"),
+                        control: { type: "text", key: "font_family" },
+                    },
+                    {
+                        name: t("Font weight"),
+                        control: { type: "text", key: "font_weight" },
+                    },
+                    {
+                        name: t("Line height"),
+                        control: { type: "text", key: "line_height" },
+                    },
+                    {
+                        name: t("Line gap"),
+                        control: { type: "text", key: "line_gap" },
+                    },
+                ],
+            },
+        ];
+    }
+
+    /**
+     * 1.13+ 声明式控件写值钩子：默认实现只改 settings + saveData，
+     * 这里覆盖以便颜色/开关变化后即时重算 CSS 变量（与旧版 display() 的 onChange 行为一致）。
+     * 旧版本 Obsidian 不调用此方法。
+     */
+    async setControlValue(key: string, value: unknown): Promise<void> {
+        (this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
+        await this.plugin.saveSettings();
+        this.plugin.refreshUI();
+    }
 }
 
 export { SettingTab, DEFAULT_SETTINGS };

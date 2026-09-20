@@ -3,6 +3,7 @@ import { Component, debounce, FileView, Plugin, TFile, View } from "obsidian";
 import { Nav, createNav } from "./navigators";
 import { store } from "./store";
 import { OutlineView, VIEW_TYPE } from "./ui/view";
+import { registerIcons } from "./ui/icons";
 import { debounceCb } from "./utils/debounce";
 
 import { DEFAULT_SETTINGS, type QuietOutlineSettings, SettingTab } from "./settings";
@@ -46,6 +47,7 @@ export default class QuietOutline extends Plugin {
     async onload() {
         await this.loadSettings();
 
+        registerIcons();
         store.init(this);
 
         this.registerView(VIEW_TYPE, (leaf) => new OutlineView(leaf, this));
@@ -188,9 +190,10 @@ export default class QuietOutline extends Plugin {
             newHeaders.length !== oldHeaders.length ||
             newHeaders.some(
                 (h, i) =>
-                    h.title !== oldHeaders[i]!.title ||
-                    h.level !== oldHeaders[i]!.level ||
-                    (h as { line?: number }).line !== (oldHeaders[i] as { line?: number }).line,
+                    h.title !== oldHeaders[i]?.title ||
+                    h.level !== oldHeaders[i]?.level ||
+                    (h as { line?: number }).line !==
+                        (oldHeaders[i] as { line?: number } | undefined)?.line,
             );
         if (!changed) return;
 

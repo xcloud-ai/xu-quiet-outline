@@ -178,6 +178,8 @@ export default {
     "Highlighting headings auto scroll into view": "Highlighting headings auto scroll into view",
     "Style Settings": "Style Settings",
     "Override primary color": "Override primary color",
+    "Primary color (light mode)": "Primary color (light mode)",
+    "Primary color (dark mode)": "Primary color (dark mode)",
     "This setting is used to override the primary color of the theme": "This setting is used to override the primary color of the theme",
     "Rainbow line color": "Rainbow line color",
     "The color of the line can be customized by rainbow": "The color of the line can be customized by rainbow",

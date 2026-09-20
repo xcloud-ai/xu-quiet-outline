@@ -1,10 +1,11 @@
 // 展开状态管理（从原 use-expand.ts 移植为纯 TypeScript 类）
 // key 由原 "item-{level}-{index}" 字符串简化为纯 header index（number），
 // 层级信息展开时实时从 headers 推导，避免 diff 变换时的 key 重组
+import type { App } from "obsidian";
 import { store, type ModifyKeys } from "@/store";
 import type QuietOutline from "@/plugin";
 
-/** 按文件路径持久化展开记忆（localStorage 单 key 存储，带容量上限） */
+/** 按文件路径持久化展开记忆（vault 级本地存储单 key，带容量上限） */
 const MEMORY_KEY = "xu-quiet-outline-expand-memory";
 const MEMORY_MAX_FILES = 800;
 
@@ -18,32 +19,32 @@ interface MemoryEntry {
     keys: number[];
 }
 
-function loadAllMemory(): Record<string, number[] | MemoryEntry> {
+type MemoryMap = Record<string, number[] | MemoryEntry>;
+
+function loadAllMemory(app: App): MemoryMap {
     try {
-        const raw = localStorage.getItem(MEMORY_KEY);
-        return raw
-            ? (JSON.parse(raw) as Record<string, number[] | MemoryEntry>)
-            : {};
+        const raw = app.loadLocalStorage(MEMORY_KEY);
+        return raw ? (JSON.parse(raw) as MemoryMap) : {};
     } catch {
         return {};
     }
 }
 
-function saveAllMemory(map: Record<string, number[] | MemoryEntry>) {
+function saveAllMemory(app: App, map: MemoryMap) {
     try {
-        localStorage.setItem(MEMORY_KEY, JSON.stringify(map));
+        app.saveLocalStorage(MEMORY_KEY, JSON.stringify(map));
     } catch {
         // 存储满等异常：静默放弃（记忆是增强功能，不阻塞主流程）
     }
 }
 
-export function readMemory(path: string): number[] | MemoryEntry | undefined {
-    return loadAllMemory()[path];
+export function readMemory(app: App, path: string): number[] | MemoryEntry | undefined {
+    return loadAllMemory(app)[path];
 }
 
-export function writeMemory(path: string, keys: number[], level: number) {
+export function writeMemory(app: App, path: string, keys: number[], level: number) {
     if (!path) return;
-    const map = loadAllMemory();
+    const map = loadAllMemory(app);
     map[path] = { level, keys };
     // 容量保护：超限时删除最早写入的条目（JSON 对象保留插入序）
     const paths = Object.keys(map);
@@ -52,7 +53,7 @@ export function writeMemory(path: string, keys: number[], level: number) {
             delete map[p];
         }
     }
-    saveAllMemory(map);
+    saveAllMemory(app, map);
 }
 
 export class ExpandState {
@@ -102,7 +103,7 @@ export class ExpandState {
 
     /** 根据当前文件路径恢复展开记忆；无记忆则按默认级别展开 */
     restore(path: string) {
-        const remembered = readMemory(path);
+        const remembered = readMemory(this.plugin.app, path);
         if (Array.isArray(remembered)) {
             // v1 旧格式：只存了 keys，级别由集合反推。
             // 空数组是旧版启动竞态产生的脏数据（无法证明是用户主动全折叠），
