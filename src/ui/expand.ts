@@ -43,9 +43,10 @@ function isMemoryMap(v: unknown): v is MemoryMap {
 
 function loadAllMemory(app: App): MemoryMap {
     try {
-        const raw = app.loadLocalStorage(MEMORY_KEY);
-        if (!raw) return {};
-        // 先落 unknown（JSON.parse 的 any 不跨边界），再用类型守卫收窄
+        // Obsidian 类型声明为 any | null：在边界立即落 unknown，阻断 any 跨边界扩散
+        const raw: unknown = app.loadLocalStorage(MEMORY_KEY);
+        if (typeof raw !== "string" || raw.length === 0) return {};
+        // 再用类型守卫对解析结果收窄
         const parsed: unknown = JSON.parse(raw);
         return isMemoryMap(parsed) ? parsed : {};
     } catch {
