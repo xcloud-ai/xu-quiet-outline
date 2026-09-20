@@ -21,10 +21,33 @@ interface MemoryEntry {
 
 type MemoryMap = Record<string, number[] | MemoryEntry>;
 
+/** 运行时校验单条记忆：v2 格式 {level, keys:number[]} */
+function isMemoryEntry(v: unknown): v is MemoryEntry {
+    if (typeof v !== "object" || v === null) return false;
+    const e = v as Record<string, unknown>;
+    return (
+        typeof e.level === "number" &&
+        Array.isArray(e.keys) &&
+        e.keys.every((k) => typeof k === "number")
+    );
+}
+
+/** 运行时校验整个记忆映射（兼容 v1：值为纯 number[]）；损坏/伪造数据一律视为无记忆 */
+function isMemoryMap(v: unknown): v is MemoryMap {
+    if (typeof v !== "object" || v === null) return false;
+    return Object.values(v as Record<string, unknown>).every(
+        (e) =>
+            (Array.isArray(e) && e.every((k) => typeof k === "number")) || isMemoryEntry(e),
+    );
+}
+
 function loadAllMemory(app: App): MemoryMap {
     try {
         const raw = app.loadLocalStorage(MEMORY_KEY);
-        return raw ? (JSON.parse(raw) as MemoryMap) : {};
+        if (!raw) return {};
+        // 先落 unknown（JSON.parse 的 any 不跨边界），再用类型守卫收窄
+        const parsed: unknown = JSON.parse(raw);
+        return isMemoryMap(parsed) ? parsed : {};
     } catch {
         return {};
     }
