@@ -1,5 +1,4 @@
 {
-    "extends": "@vue/tsconfig/tsconfig.dom.json",
     "compilerOptions": {
         "baseUrl": ".",
         "inlineSourceMap": true,
@@ -13,11 +12,10 @@
         "isolatedModules": true,
         "strictNullChecks": true,
         "noUncheckedIndexedAccess": false,
-        "jsx": "preserve",
-        "lib": ["DOM", "ES2022"],
+        "lib": ["DOM", "DOM.Iterable", "ES2022"],
         "paths": {
-            "@/*": ["src/*"],
-        },
+            "@/*": ["src/*"]
+        }
     },
-    "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
+    "include": ["src/**/*.ts"]
 }

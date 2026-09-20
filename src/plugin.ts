@@ -8,22 +8,25 @@ import { debounceCb } from "./utils/debounce";
 import { DEFAULT_SETTINGS, type QuietOutlineSettings, SettingTab } from "./settings";
 import { registerCommands } from "./commands";
 import { eventBus } from "./utils/event-bus";
-import "./stalin.css";
 
 export default class QuietOutline extends Plugin {
     settings!: QuietOutlineSettings;
     navigator: Nav = createNav("dummy", this, null);
     // jumping flag: false while a jump-initiated scroll is settling (1s window)
     jumping = true;
+    /** 当前挂载的大纲面板（单面板模型） */
     outlineView: OutlineView | null = null;
 
-    /** 遍历所有已挂载的大纲面板（插件更新后可能残留多个，均需同步刷新） */
+    /** 遍历所有已挂载的大纲面板（插件更新后可能残留多个，均需刷新） */
     forEachOutlineView(cb: (view: OutlineView) => void) {
+        if (this.outlineView) {
+            cb(this.outlineView);
+            return;
+        }
+        // 防御：引用丢失时回退到 workspace 查找
         for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
             const view = leaf.view;
-            if (view instanceof OutlineView && view.vueInstance) {
-                cb(view);
-            }
+            if (view instanceof OutlineView) cb(view);
         }
     }
 
@@ -33,7 +36,6 @@ export default class QuietOutline extends Plugin {
     block_cursor_change!: () => void;
     private prevActiveFile: TFile | null = null;
     private prevActiveFileView: View | null = null;
-    private prevView: View | null = null;
 
     async startJumping() {
         this.jumping = false;
@@ -81,7 +83,8 @@ export default class QuietOutline extends Plugin {
         this.registerEvent(
             this.app.workspace.on("css-change", () => {
                 store.dark = activeDocument.body.hasClass("theme-dark");
-                store.cssChange = !store.cssChange;
+                // 主题变化后重算 CSS 变量（彩虹线/主题色/字体）
+                this.forEachOutlineView((view) => view.forceRemakeTree());
             }),
         );
 
@@ -89,7 +92,7 @@ export default class QuietOutline extends Plugin {
             this.app.metadataCache.on("changed", (file) => {
                 // only react to the file shown in the outline, ignore the rest
                 if (this.navigator.handlesFile(file)) {
-                    this.refresh("file-modify");
+                    this.refresh();
                 }
             }),
         );
@@ -105,7 +108,6 @@ export default class QuietOutline extends Plugin {
 
         this.registerEvent(
             this.app.workspace.on("active-leaf-change", async (leaf) => {
-                this.prevView = leaf?.view || null;
                 if (!leaf) return;
 
                 const activeFileView = this.app.workspace.getActiveFileView();
@@ -131,7 +133,7 @@ export default class QuietOutline extends Plugin {
 
         this.registerEvent(
             eventBus.on("active-fileview-change", async (view) => {
-                // 所有面板都在主编辑区 tab 组时才跳过（保持原语义：主区面板不随文件切换自动刷新）
+                // 面板在主编辑区 tab 组时跳过（保持原语义：主区面板不随文件切换自动刷新）
                 const outlineLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
                 if (outlineLeaves.length > 0 && outlineLeaves.every((leaf) => leaf.group)) {
                     return;
@@ -149,13 +151,11 @@ export default class QuietOutline extends Plugin {
         );
     }
 
-    // set store.headers
-    refresh_outline = async (reason?: "file-modify") => {
-        if (reason === "file-modify") {
-            await this.navigator.updateHeaders();
-        } else {
-            await this.navigator.setHeaders();
-        }
+    // set store.headers（编辑后统一走 diff 增量迁移）
+    refresh_outline = async () => {
+        await this.navigator.updateHeaders();
+        // headers + modifyKeys 已更新：面板做 diff 增量迁移并重绘
+        this.forEachOutlineView((v) => v.onHeadersModified());
     };
 
     refresh = debounce(this.refresh_outline, 300, true);
@@ -175,12 +175,9 @@ export default class QuietOutline extends Plugin {
     async updateNavAndRefresh(type: string, view: Component | null) {
         await this.updateNav(type, view);
 
-        // update naive-ui tree's data and expandedKey in the same tick
-        // to avoid animation-in-progress stuck
-        // https://github.com/tusen-ai/naive-ui/issues/5217
         const newHeaders = await this.navigator.getHeaders();
         store.headers = newHeaders;
-        this.forEachOutlineView((view) => view.vueInstance.onLeafChange());
+        this.forEachOutlineView((v) => v.onLeafChange());
     }
 
     /** resolved 后重拉标题：修复启动期读到旧缓存导致新增/尾部标题缺失 */
@@ -198,7 +195,7 @@ export default class QuietOutline extends Plugin {
         if (!changed) return;
 
         store.headers = newHeaders;
-        this.forEachOutlineView((view) => view.vueInstance.onLeafChange());
+        this.forEachOutlineView((v) => v.onHeadersModified());
     }
 
     onunload(): void {
@@ -226,6 +223,12 @@ export default class QuietOutline extends Plugin {
 
     async saveSettings() {
         await this.saveData(this.settings);
+    }
+
+    /** 设置变化后由 SettingTab 调用：同步 store 并让面板重算主题/重绘 */
+    refreshUI() {
+        store.init(this);
+        this.forEachOutlineView((view) => view.forceRemakeTree());
     }
 
     async activateView() {

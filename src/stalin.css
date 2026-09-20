@@ -1,75 +1,248 @@
-/* Tab Styles */
-/* Custom Style Variables */
+/* ============ 布局骨架 ============ */
 .quiet-outline {
     --custom-font-size: var(--nav-item-size);
     --custom-font-family: inherit;
     --custom-font-weight: inherit;
     --custom-line-height: 1.6em;
     --custom-line-gap: 0px;
-}
+    --qo-primary: var(--interactive-accent);
 
-/* Wikilink headings rendered as colored plain text (no brackets, not clickable) */
-.quiet-outline-wikilink {
-    color: var(--link-color);
-}
-
-/* ConfirmModal: improve spacing/typography for a cleaner layout */
-.quiet-outline-confirm-modal {
-    /* Slightly increase line-height for multi-line warnings */
-    line-height: 1.5;
-}
-
-/* Title spacing */
-.quiet-outline-confirm-modal .modal-title {
-    margin-bottom: 8px;
-}
-
-/* Paragraph spacing (supports multi-paragraph messages) */
-.quiet-outline-confirm-modal p {
-    margin: 0;
-}
-
-/* Spacing between paragraphs */
-.quiet-outline-confirm-modal p + p {
-    margin-top: 10px;
-}
-
-/* ConfirmModal: right-aligned buttons with spacing + vertically centered icons */
-.quiet-outline-confirm-modal .quiet-outline-confirm-modal__buttons {
+    height: 100%;
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 14px;
+    flex-direction: column;
+    font-size: var(--custom-font-size);
+    font-family: var(--custom-font-family);
+    font-weight: var(--custom-font-weight);
 }
 
-/* Make buttons feel consistent and aligned */
-.quiet-outline-confirm-modal .quiet-outline-confirm-modal__buttons button {
-    display: inline-flex;
+/* 大纲视图内容区去掉底部留白 */
+.workspace-leaf-content[data-type="xu-quiet-outline"] .view-content {
+    padding-bottom: 0px;
+}
+
+/* ============ 功能栏（置底 / 重置 / 搜索） ============ */
+.quiet-outline .qo-function-bar {
+    display: flex;
     align-items: center;
-    min-height: 30px;
+    gap: 4px;
+    padding: 4px 6px 6px 6px;
 }
 
-/* Add spacing between icon and label, and keep the icon vertically centered */
-.quiet-outline-confirm-modal .quiet-outline-confirm-modal__btn-icon {
+.quiet-outline .qo-icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-right: 6px;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--icon-color);
+    cursor: pointer;
+    flex: none;
 }
 
-/* Fix SVG baseline alignment so it appears visually centered inside the button */
-.quiet-outline-confirm-modal .quiet-outline-confirm-modal__btn-icon svg {
-    display: block;
+.quiet-outline .qo-icon-btn svg {
+    width: 18px;
+    height: 18px;
 }
 
-/* 设置面板标准头描述文字 */
+.quiet-outline .qo-icon-btn:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--icon-color-hover);
+}
+
+.quiet-outline .qo-search {
+    flex: 1;
+    min-width: 20px;
+    height: 26px;
+    padding: 0 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+    outline: none;
+}
+
+.quiet-outline .qo-search:focus {
+    border-color: var(--qo-primary);
+}
+
+.quiet-outline .qo-search::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+/* ============ 级别滑杆 ============ */
+.quiet-outline .qo-slider-box {
+    padding: 0 10px 6px 10px;
+}
+
+.quiet-outline .qo-slider {
+    width: 100%;
+    margin: 0;
+    accent-color: var(--qo-primary);
+    cursor: pointer;
+}
+
+.quiet-outline .qo-marks {
+    position: relative;
+    height: 6px;
+    margin-top: -2px;
+}
+
+.quiet-outline .qo-mark {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 4px;
+    border-radius: 1px;
+    background: var(--background-modifier-border);
+    transform: translateX(-50%);
+}
+
+/* 6 个刻度均分（0..5） */
+.quiet-outline .qo-mark[data-v="0"] { left: 0%; transform: none; }
+.quiet-outline .qo-mark[data-v="1"] { left: 20%; }
+.quiet-outline .qo-mark[data-v="2"] { left: 40%; }
+.quiet-outline .qo-mark[data-v="3"] { left: 60%; }
+.quiet-outline .qo-mark[data-v="4"] { left: 80%; }
+.quiet-outline .qo-mark[data-v="5"] { left: 100%; transform: translateX(-100%); }
+
+/* ============ 树（虚拟滚动容器） ============ */
+.quiet-outline .qo-tree {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 4px 2px var(--size-4-8) 2px;
+    color: var(--nav-item-color);
+}
+
+.quiet-outline .qo-viewport {
+    position: relative;
+}
+
+/* 行：绝对定位 + 底部行距（行距计入行高，保证虚拟滚动定距准确） */
+.quiet-outline .qo-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding-bottom: var(--custom-line-gap);
+}
+
+.quiet-outline .qo-row.qo-measure {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: auto;
+}
+
+.quiet-outline .qo-content {
+    display: flex;
+    align-items: center;
+    line-height: var(--custom-line-height);
+    min-height: 10px;
+    border-radius: var(--nav-item-radius);
+    padding: 0 4px 0 2px;
+    white-space: nowrap;
+}
+
+/* 悬浮 */
+.quiet-outline .qo-row .qo-content:hover {
+    color: var(--nav-item-color-active);
+    background-color: var(--nav-item-background-active);
+    font-weight: var(--nav-item-weight-active);
+    cursor: pointer;
+}
+
+/* 定位高亮（滚动/光标同步）与选中高亮 */
+.quiet-outline .qo-row .qo-content.located,
+.quiet-outline .qo-row .qo-content.selected {
+    background-color: var(--nav-item-background-active);
+    border-radius: var(--nav-item-radius);
+}
+
+/* ============ 彩虹缩进线 ============ */
+.quiet-outline .qo-indent {
+    position: relative;
+    width: 17px;
+    align-self: stretch;
+    flex: none;
+}
+
+.quiet-outline .qo-indent::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 8px;
+    height: 100%;
+    border-right: var(--nav-indentation-guide-width, 1px) solid var(--nav-indentation-guide-color);
+}
+
+.quiet-outline .qo-indent.line-1::after { border-color: var(--qo-line-1); }
+.quiet-outline .qo-indent.line-2::after { border-color: var(--qo-line-2); }
+.quiet-outline .qo-indent.line-3::after { border-color: var(--qo-line-3); }
+.quiet-outline .qo-indent.line-4::after { border-color: var(--qo-line-4); }
+.quiet-outline .qo-indent.line-5::after { border-color: var(--qo-line-5); }
+
+/* ============ 展开箭头 ============ */
+.quiet-outline .qo-switcher {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    flex: none;
+    color: var(--nav-collapse-icon-color);
+    cursor: pointer;
+}
+
+.quiet-outline .qo-switcher svg {
+    transition: transform 0.15s ease;
+}
+
+.quiet-outline .qo-switcher.is-open svg {
+    transform: rotate(90deg);
+}
+
+/* ============ 标题文本 ============ */
+.quiet-outline .qo-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 标题里的双链：蓝色纯文本（无括号、不可点击） */
+.quiet-outline .qo-wikilink {
+    color: var(--link-color);
+}
+
+/* ============ 拖拽视觉 ============ */
+.quiet-outline .qo-row .qo-content.dragging {
+    opacity: 0.45;
+}
+
+/* 落点提示：before/after 画横线，inside 画外框 */
+.quiet-outline .qo-row .qo-content.drop-before {
+    box-shadow: inset 0 2px 0 0 var(--qo-primary);
+}
+
+.quiet-outline .qo-row .qo-content.drop-after {
+    box-shadow: inset 0 -2px 0 0 var(--qo-primary);
+}
+
+.quiet-outline .qo-row .qo-content.drop-inside {
+    box-shadow: inset 0 0 0 2px var(--qo-primary);
+}
+
+/* ============ 设置面板 ============ */
 .quiet-outline-hint {
     margin: 0 0 8px 0;
     color: var(--text-muted);
     font-size: var(--font-ui-smaller);
 }
 
-/* 设置面板分区分隔线 */
 .quiet-outline-divider {
     border: none;
     border-top: 1px solid var(--background-modifier-border);
@@ -104,10 +277,6 @@
     font-weight: var(--font-semibold);
 }
 
-.quiet-outline-export-format-input {
-    width: 100%;
-}
-
 .quiet-outline-tab-content {
     min-height: 400px;
 }
@@ -120,213 +289,3 @@
 .quiet-outline-setting-group .setting-item:not(:first-child) {
     padding-left: 32px;
 }
-
-.quiet-outline .n-tree {
-    font-size: var(--custom-font-size);
-    font-family: var(--custom-font-family);
-    font-weight: var(--custom-font-weight);
-}
-
-.quiet-outline .n-tree-node-wrapper {
-    padding: 0px;
-    margin-bottom: var(--custom-line-gap);
-}
-
-.quiet-outline .n-tree-node.n-tree-node--selectable {
-    align-items: center;
-}
-
-/* heading的间距，通过行高来设置 */
-/*  heading line spacing */
-.quiet-outline .n-tree-node .n-tree-node-content {
-    line-height: var(--custom-line-height);
-    min-height: 10px;
-    /*margin-bottom: var(--custom-line-gap);*/
-}
-
-.quiet-outline .n-tree-node-content__text p {
-    margin: 0;
-}
-
-/* ellipsis */
-.quiet-outline .n-tree.ellipsis {
-    overflow-x: hidden;
-}
-
-.quiet-outline .n-tree.ellipsis .n-tree-node .n-tree-node-content p {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.quiet-outline .n-tree.ellipsis .n-tree-node-content__text {
-    overflow: hidden;
-}
-
-.quiet-outline .n-tree.ellipsis .n-tree-node-content {
-    overflow: hidden;
-    flex: 1;
-}
-
-.quiet-outline
-    .n-tree.n-tree--block-line
-    .n-tree-node:not(.n-tree-node--disabled).n-tree-node--pending {
-    background-color: unset;
-}
-
-/* 悬浮时的背景颜色 */
-.quiet-outline .n-tree.n-tree--block-line .n-tree-node:not(.n-tree-node--disabled):hover {
-    color: var(--nav-item-color-active);
-    background-color: var(--nav-item-background-active);
-    font-weight: var(--nav-item-weight-active);
-}
-
-/* 功能栏 */
-.quiet-outline .function-bar {
-    display: flex;
-    align-items: center;
-    padding: 0px;
-    margin-bottom: 5px;
-}
-
-.quiet-outline .function-bar .n-button {
-    margin-right: 5px;
-    text-align: center;
-}
-
-.quiet-outline .function-bar .n-input {
-    flex: 1;
-    min-width: 10px;
-}
-
-/* avoid <input> style overriding by theme */
-.quiet-outline .function-bar input[type="text"] {
-    &:hover,
-    &:focus {
-        background-color: transparent;
-        box-shadow: none;
-        border: none;
-    }
-    background-color: transparent;
-    box-shadow: none;
-    border: none;
-}
-
-/* 图标大小 */
-.quiet-outline .n-button__icon {
-    --n-icon-size: 22px;
-    font-size: 22px;
-}
-
-.quiet-outline .n-tree-node-content .n-input {
-    .n-input-wrapper {
-        padding: 0px;
-        /*padding-left: 4px;
-        padding-right: 4px;*/
-    }
-    .n-input__input-el {
-        line-height: var(--custom-line-height);
-        font-size: var(--custom-font-size);
-        height: var(--custom-line-height);
-    }
-}
-
-.quiet-outline code {
-    /* color:var(--text-color-code, var(--code-normal)); */
-    font-weight: bold;
-    /* font-size: var(--font-size-code, var(--code-size)); */
-    font-family: var(--font-monospace);
-    background-color: var(--code-background);
-    border-radius: var(--radius-s);
-}
-
-.quiet-outline a.tag {
-    white-space: nowrap;
-    padding: 0.2em 0.6em;
-}
-.quiet-outline a:not(.tag) {
-    color: var(--link-external-color);
-}
-.quiet-outline span.internal-link {
-    color: var(--link-color);
-}
-
-.quiet-outline mark {
-    background-color: var(--text-highlight-bg);
-    color: var(--text-normal);
-}
-
-/* ===================== */
-/* 对不同级别标题进行设置 */
-/* ===================== */
-.quiet-outline .n-tree .n-tree-node-switcher {
-    height: 0px;
-}
-
-/* 设置除一级标题之外的所有标题 */
-/* setting h2-h6 */
-.quiet-outline [class*="level-"]:not(.level-1) .n-tree-node-content {
-    /*
-    color: red;
-    font-weight:bold;
-    */
-    font-size: 1em;
-}
-
-/* location */
-
-.quiet-outline .n-tree.n-tree--block-line
-    .n-tree-node-wrapper
-    .n-tree-node:not(.n-tree-node--disabled).n-tree-node--selected {
-    background-color: transparent;
-}
-
-.quiet-outline
-    .n-tree.n-tree--block-line:focus
-    .n-tree-node:not(.n-tree-node--disabled).n-tree-node--selected {
-    box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
-}
-
-/* located heading 规则在 Outline.vue 的 style 块内维护（直选节点，避免 :has） */
-
-/* 大纲视图内容区去掉底部留白（用 Obsidian 原生 data-type 选择器，避免 :has） */
-.workspace-leaf-content[data-type="xu-quiet-outline"] .view-content {
-    padding-bottom: 0px;
-}
-
-.quiet-outline .n-tree.n-tree--block-node.n-tree--block-line {
-    padding-bottom: var(--size-4-8);
-}
-
-/* 固定功能栏 */
-.quiet-outline {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.quiet-outline .n-config-provider {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-.quiet-outline .n-tree {
-    overflow: auto;
-    padding-inline: 2px;
-    /* constrain height so (virtual) scrolling happens inside the tree,
-       keeping the function bar and slider visible */
-    flex: 1;
-    min-height: 0;
-}
-
-/*remove 'no data'*/
-.quiet-outline .n-tree__empty {
-    display: none;
-}
-
-/*fix content blur in canvas embed markdown*/
-.canvas-node .markdown-embed-content .is-flashing {
-    mix-blend-mode: normal;
-}
-
-/* experimental */

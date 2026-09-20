@@ -1,6 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import QuietOutline from "./plugin";
-import { store } from "./store";
 import { t } from "@/lang/helper";
 
 type AutoExpandMode =
@@ -43,7 +42,7 @@ const DEFAULT_SETTINGS: QuietOutlineSettings = {
     auto_scroll_into_view: true,
 
     // Style settings
-    patch_color: true,
+    patch_color: false,
     primary_color_light: "#18a058",
     primary_color_dark: "#63e2b7",
     rainbow_line: true,
@@ -123,13 +122,16 @@ class SettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName(t("Default expanding level"))
-            .setDesc(t("0 means no limitation, and all the rest of levels will be expanded"))
-            .addText((text) =>
-                text.setValue(this.plugin.settings.expand_level).onChange(async (value) => {
+            .setDesc(t("Default expanding level desc"))
+            .addDropdown((dropdown) => {
+                for (let i = 0; i <= 5; i++) {
+                    dropdown.addOption(String(i), String(i));
+                }
+                dropdown.setValue(this.plugin.settings.expand_level).onChange(async (value) => {
                     this.plugin.settings.expand_level = value;
                     await this.plugin.saveSettings();
-                }),
-            );
+                });
+            });
 
         new Setting(containerEl)
             .setName(t("Auto expand mode"))
@@ -150,7 +152,7 @@ class SettingTab extends PluginSettingTab {
                     .onChange(async (value) => {
                         this.plugin.settings.auto_expand_ext = value as AutoExpandMode;
                         await this.plugin.saveSettings();
-                        store.init(this.plugin);
+                        this.plugin.refreshUI();
                     }),
             );
 
@@ -165,7 +167,7 @@ class SettingTab extends PluginSettingTab {
                 toggle.setValue(this.plugin.settings.drag_modify).onChange(async (value) => {
                     this.plugin.settings.drag_modify = value;
                     await this.plugin.saveSettings();
-                    store.init(this.plugin);
+                    this.plugin.refreshUI();
                 }),
             );
 
@@ -202,21 +204,21 @@ class SettingTab extends PluginSettingTab {
                 toggle.setValue(this.plugin.settings.patch_color).onChange(async (value) => {
                     this.plugin.settings.patch_color = value;
                     await this.plugin.saveSettings();
-                    store.init(this.plugin);
+                    this.plugin.refreshUI();
                 }),
             )
             .addColorPicker((color) =>
                 color.setValue(this.plugin.settings.primary_color_light).onChange(async (value) => {
                     this.plugin.settings.primary_color_light = value;
                     await this.plugin.saveSettings();
-                    store.init(this.plugin);
+                    this.plugin.refreshUI();
                 }),
             )
             .addColorPicker((color) =>
                 color.setValue(this.plugin.settings.primary_color_dark).onChange(async (value) => {
                     this.plugin.settings.primary_color_dark = value;
                     await this.plugin.saveSettings();
-                    store.init(this.plugin);
+                    this.plugin.refreshUI();
                 }),
             );
 
@@ -227,33 +229,28 @@ class SettingTab extends PluginSettingTab {
                 toggle.setValue(this.plugin.settings.rainbow_line).onChange(async (value) => {
                     this.plugin.settings.rainbow_line = value;
                     await this.plugin.saveSettings();
-                    store.init(this.plugin);
+                    this.plugin.refreshUI();
                 }),
             );
 
-        new Setting(containerEl).setName("Rainbow line colors").addColorPicker((color) =>
-            color.setValue(this.plugin.settings.rainbow_color_1).onChange(async (value) => {
-                this.plugin.settings.rainbow_color_1 = value;
-                await this.plugin.saveSettings();
-                store.init(this.plugin);
-            }),
-        );
-
-        const colorKeys = [
+        const rainbowColorKeys = [
+            "rainbow_color_1",
             "rainbow_color_2",
             "rainbow_color_3",
             "rainbow_color_4",
             "rainbow_color_5",
         ] as const;
-        for (const key of colorKeys) {
-            new Setting(containerEl).setName("").addColorPicker((color) =>
-                color.setValue(this.plugin.settings[key]).onChange(async (value) => {
-                    this.plugin.settings[key] = value;
-                    await this.plugin.saveSettings();
-                    store.init(this.plugin);
-                }),
-            );
-        }
+        rainbowColorKeys.forEach((key, i) => {
+            new Setting(containerEl)
+                .setName(`${t("Indent level")} ${i + 1}`)
+                .addColorPicker((color) =>
+                    color.setValue(this.plugin.settings[key]).onChange(async (value) => {
+                        this.plugin.settings[key] = value;
+                        await this.plugin.saveSettings();
+                        this.plugin.refreshUI();
+                    }),
+                );
+        });
 
         // font settings
         new Setting(containerEl).setName(t("Font Settings")).setHeading();
@@ -264,7 +261,7 @@ class SettingTab extends PluginSettingTab {
                 text.setValue(this.plugin.settings.font_size).onChange(async (value) => {
                     this.plugin.settings.font_size = value;
                     await this.plugin.saveSettings();
-                    store.init(this.plugin);
+                    this.plugin.refreshUI();
                 }),
             );
 
@@ -272,7 +269,7 @@ class SettingTab extends PluginSettingTab {
             text.setValue(this.plugin.settings.font_family).onChange(async (value) => {
                 this.plugin.settings.font_family = value;
                 await this.plugin.saveSettings();
-                store.init(this.plugin);
+                this.plugin.refreshUI();
             }),
         );
 
@@ -280,7 +277,7 @@ class SettingTab extends PluginSettingTab {
             text.setValue(this.plugin.settings.font_weight).onChange(async (value) => {
                 this.plugin.settings.font_weight = value;
                 await this.plugin.saveSettings();
-                store.init(this.plugin);
+                this.plugin.refreshUI();
             }),
         );
 
@@ -288,7 +285,7 @@ class SettingTab extends PluginSettingTab {
             text.setValue(this.plugin.settings.line_height).onChange(async (value) => {
                 this.plugin.settings.line_height = value;
                 await this.plugin.saveSettings();
-                store.init(this.plugin);
+                this.plugin.refreshUI();
             }),
         );
 
@@ -296,7 +293,7 @@ class SettingTab extends PluginSettingTab {
             text.setValue(this.plugin.settings.line_gap).onChange(async (value) => {
                 this.plugin.settings.line_gap = value;
                 await this.plugin.saveSettings();
-                store.init(this.plugin);
+                this.plugin.refreshUI();
             }),
         );
     }

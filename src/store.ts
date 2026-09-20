@@ -1,33 +1,11 @@
-import { reactive } from "vue";
+// 全局数据存储（vanilla 版：纯对象，无响应式）
+// UI 更新由 view 层显式方法调用驱动，不再依赖响应式
 import type QuietOutline from "./plugin";
-
-export type SupportedIcon = string;
 
 export type Heading = {
     title: string;
     level: number;
-    id?: string;
-    icon?: SupportedIcon;
 };
-
-export function getParent(headId: number, headings: Heading[]): number {
-    for (let i = headId; i >= 0; i--) {
-        if (headings[i].level < headings[headId].level) return i;
-    }
-    return -1;
-}
-
-// -1 表示根
-export function getChildren(headId: number, headings: Heading[]): Set<number> {
-    if (headId === -1) return new Set(headings.map((_, i) => i));
-    const children = [];
-    for (let i = headId + 1; i < headings.length; i++) {
-        if (headings[i].level <= headings[headId].level) break;
-
-        children.push(i);
-    }
-    return new Set(children);
-}
 
 export type ModifyKeys = {
     offsetModifies: {
@@ -48,17 +26,13 @@ export type ModifyKeys = {
     }[];
 };
 
-export const store = reactive({
-    headers: [] as Heading[],
-    dark: true,
-    cssChange: false,
-    leafChange: false,
-    currentEditingKey: "",
-    modifyKeys: {} as ModifyKeys,
-    dragModify: false,
-    draggingIdx: -1, // outline index of the heading being dragged (native DnD)
-    refreshTree: () => {},
-    theme: {
+class Store {
+    headers: Heading[] = [];
+    dark = true;
+    dragModify = true;
+    modifyKeys: ModifyKeys = { offsetModifies: [], removes: [], adds: [], modifies: [] };
+
+    theme = {
         patchColor: false,
         primaryColorLight: "",
         primaryColorDark: "",
@@ -73,30 +47,27 @@ export const store = reactive({
         fontWeight: "",
         lineHeight: "",
         lineGap: "",
-    },
-    init,
-});
-
-function init(plugin: QuietOutline) {
-    const { app, settings } = plugin;
-    store.dark = activeDocument.body.hasClass("theme-dark");
-    store.dragModify = settings.drag_modify;
-    store.refreshTree = () => {
-        plugin.forEachOutlineView((view) => view.vueInstance.forceRemakeTree());
-        app.workspace.trigger("layout-change");
     };
-    store.theme.patchColor = settings.patch_color;
-    store.theme.primaryColorLight = settings.primary_color_light;
-    store.theme.primaryColorDark = settings.primary_color_dark;
-    store.theme.rainbowLine = settings.rainbow_line;
-    store.theme.rainbowColor1 = settings.rainbow_color_1;
-    store.theme.rainbowColor2 = settings.rainbow_color_2;
-    store.theme.rainbowColor3 = settings.rainbow_color_3;
-    store.theme.rainbowColor4 = settings.rainbow_color_4;
-    store.theme.rainbowColor5 = settings.rainbow_color_5;
-    store.theme.fontSize = settings.font_size;
-    store.theme.fontFamily = settings.font_family;
-    store.theme.fontWeight = settings.font_weight;
-    store.theme.lineHeight = settings.line_height;
-    store.theme.lineGap = settings.line_gap;
+
+    init(plugin: QuietOutline) {
+        const { settings } = plugin;
+        this.dark = activeDocument.body.hasClass("theme-dark");
+        this.dragModify = settings.drag_modify;
+        this.theme.patchColor = settings.patch_color;
+        this.theme.primaryColorLight = settings.primary_color_light;
+        this.theme.primaryColorDark = settings.primary_color_dark;
+        this.theme.rainbowLine = settings.rainbow_line;
+        this.theme.rainbowColor1 = settings.rainbow_color_1;
+        this.theme.rainbowColor2 = settings.rainbow_color_2;
+        this.theme.rainbowColor3 = settings.rainbow_color_3;
+        this.theme.rainbowColor4 = settings.rainbow_color_4;
+        this.theme.rainbowColor5 = settings.rainbow_color_5;
+        this.theme.fontSize = settings.font_size;
+        this.theme.fontFamily = settings.font_family;
+        this.theme.fontWeight = settings.font_weight;
+        this.theme.lineHeight = settings.line_height;
+        this.theme.lineGap = settings.line_gap;
+    }
 }
+
+export const store = new Store();

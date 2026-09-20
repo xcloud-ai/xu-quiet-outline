@@ -1,18 +1,7 @@
 /* eslint-disable no-undef -- module augmentation 内的类型名由 TS 从被增强的 "obsidian" 模块解析，no-undef 无法理解增强语法 */
-import type {
-    AllCanvasNodeData,
-    CanvasColor,
-    CanvasEdgeData,
-    EdgeEnd,
-    NodeSide,
-} from "obsidian/canvas";
-import { EditorView } from "@codemirror/view";
+import type { EditorView } from "@codemirror/view";
 
 declare global {
-    const i18next: {
-        t: (key: string, options?: Record<string, unknown>) => string;
-    };
-
     interface ScrollIntoViewOptions {
         // supported in chrome 140, obsidian 1.11
         container?: "all" | "nearest";
@@ -22,28 +11,6 @@ declare global {
 declare module "obsidian" {
     interface EventRef {
         e?: Events;
-    }
-
-    interface App {
-        dragManager: DragManager;
-    }
-
-    interface DraggableBase {
-        source?: string;
-        icon?: string;
-        title?: string;
-    }
-
-    interface DraggableHeading extends DraggableBase {
-        type: "heading";
-        heading: n.heading;
-        file: TFile | null;
-    }
-
-    type Draggable = DraggableHeading;
-
-    interface DragManager {
-        onDragStart: (event: DragEvent, data: Draggable) => void;
     }
 
     interface MetadataCache {
@@ -56,11 +23,6 @@ declare module "obsidian" {
 
     interface WorkspaceLeaf {
         group: string | null;
-    }
-
-    interface FileManager {
-        updateInternalLinks: (changes: unknown) => Promise<void>;
-        iterateAllRefs(callback: (filePath: string, reference: unknown) => void): void;
     }
 
     interface MarkdownPreviewSection {
@@ -95,299 +57,14 @@ declare module "obsidian" {
         renderer: MarkdownPreviewRenderer;
     }
 
-    export interface CanvasView extends FileView {
-        app: App;
-        canvas: Canvas;
-        data: string;
-        __vimed?: boolean;
-
-        /**
-         * execute when the canvas is modified
-         */
-        requestSave(): void;
-    }
-
-    type CanvasComponent = CanvasNode | CanvasEdge;
-
-    export interface Canvas {
-        nodes: Map<string, CanvasNode>;
-        edges: Map<string, CanvasEdge>;
-        data: {
-            nodes: AllCanvasNodeData[];
-            edges: CanvasEdgeData[];
-        };
-        /** edges set from node */
-        edgeFrom: { data: Map<CanvasNode, Set<CanvasEdge>> };
-        /** edges set to node */
-        edgeTo: { data: Map<CanvasNode, Set<CanvasEdge>> };
-
-        selection: Set<CanvasComponent>;
-
-        /**
-         * execute when the canvas is modified
-         */
-        requestSave(isPushHistory: boolean): void;
-
-        select(component: CanvasComponent): void;
-        deselect(component: CanvasComponent): void;
-
-        /**
-         * clear selection and add all components provided to selection
-         *
-         * if no component provided, add all nodes to selection (no edges)
-         */
-        selectAll(components?: CanvasComponent[]): void;
-        deselectAll(): void;
-        selectOnly(component: CanvasNode | CanvasEdge): void;
-
-        zoomToBbox(bbox: BBox): void;
-        zoomToFit(): void;
-        zoomToSelection(): void;
-
-        panIntoView(bbox: BBox): void;
-        updateSelection(update: () => void): void;
-        getContainingNodes(bbox: BBox): CanvasNode[];
-        getViewportBBox(): BBox;
-    }
-
-    export interface CanvasNodeInstance {
-        id: string;
-        bbox: BBox;
-        color: CanvasColor;
-        canvas: Canvas;
-        containerEl: HTMLElement;
-        contentEl: HTMLElement;
-        labelEl: HTMLElement;
-        nodeEl: HTMLElement;
-        height: number;
-        width: number;
-        x: number;
-        y: number;
-        renderedZIndex: number;
-
-        select(): void;
-        deselect(): void;
-        getData(): AllCanvasNodeData;
-        startEditing(): void;
-    }
-
-    interface CanvasGroupNode extends CanvasNodeInstance {
-        label: string;
-        unknownData: {
-            type: "group";
-        };
-
-        setLabel(label: string): void;
-    }
-
-    interface EmbedFileView extends Component {
-        app: App;
-        file: TFile | null;
-        containerEl: HTMLElement;
-    }
-
-    type NodeFileType = EmbedMarkdownView | EmbedFileView;
-
-    interface CanvasFileNode extends CanvasNodeInstance {
-        file: TFile;
-        filePath: string;
-        child: NodeFileType;
-        unknownData: {
-            file: string;
-            type: "file";
-        };
-    }
-
-    interface CanvasTextNode extends CanvasNodeInstance {
-        unknownData: {
-            text: string;
-            type: "text";
-        };
-        child: EmbedMarkdownView;
-    }
-
-    interface CanvasLinkNode extends CanvasNodeInstance {
-        unknownData: {
-            url: string;
-            type: "link";
-        };
-
-        setUrl(url: string): void;
-    }
-
-    export type CanvasNode = CanvasGroupNode | CanvasFileNode | CanvasTextNode | CanvasLinkNode;
-
-    export interface BBox {
-        minX: number;
-        minY: number;
-        maxX: number;
-        maxY: number;
-    }
-
-    export interface CanvasEdgeExt {
-        id: string;
-        bbox: BBox;
-        color: CanvasColor;
-        label?: string;
-        from: {
-            node: CanvasNode;
-            side: NodeSide;
-            end: EdgeEnd;
-        };
-        to: {
-            node: CanvasNode;
-            side: NodeSide;
-            end: EdgeEnd;
-        };
-
-        select(): void;
-        deselect(): void;
-        getData(): CanvasEdgeData;
-    }
-
-    export type CanvasEdge = CanvasEdgeExt;
-
-    interface FileView {
-        data: string;
-    }
-
-    export interface EmbedMarkdownView extends View {
-        data: string;
-        text: string;
-        file: TFile | null;
-        editMode: {
-            editor: Editor;
-        };
-        previewMode: {
-            containerEl: HTMLElement;
-            renderer: MarkdownPreviewRenderer;
-        };
-
-        getMode(): "preview" | "source";
-        toggleMode(): void;
-    }
-
     interface Editor {
         cm: EditorView;
-        /**
-         * @param ranges
-         * @param highlightClass set to "is-flashing"
-         * @param flag1 function unknown, set to true
-         * @param flag2 function unknown, set to true
-         */
-        addHighlights(
-            ranges: EditorRange[],
-            highlightClass: string,
-            flag1: boolean,
-            flag2: boolean,
-        ): void;
     }
 
     interface MenuItem {
         setSubmenu(): Menu;
         setWarning(isWarning: boolean): MenuItem;
     }
-
-    /** the `bases` leaf view, hosting a toolbar and one inner BasesView */
-    interface BasesFileView extends FileView {
-        controller: QueryController;
-    }
-
-    interface QueryController {
-        view: BasesView | null;
-        /** scroll container of the inner view */
-        viewContainerEl: HTMLElement;
-        /** triggers "view-changed" when the inner view is replaced */
-        events: Events;
-    }
-
-    interface BasesRow {
-        entry?: BasesEntry;
-        el: HTMLElement;
-    }
-
-    interface BasesGroup {
-        rows?: BasesRow[];
-        /** cards and list views */
-        containerEl?: HTMLElement;
-        /** table view */
-        tableEl?: HTMLElement;
-    }
-
-    /** all members below are unofficial, so they are optional on purpose */
-    interface BasesView {
-        /** table view rows, flattened across groups */
-        rows?: BasesRow[];
-        /** cards view items */
-        items?: BasesRow[];
-        groups?: BasesGroup[];
-        /** cards view lays entries out in a grid */
-        measurements?: { cardsPerRow?: number };
-        updateVirtualDisplay?(): void;
-    }
-
-    interface PdfView extends FileView {
-        viewer: PdfViewerLoader;
-        _quietOutlineCache: {
-            allItems: PdfOutlineItem[];
-        };
-    }
-
-    interface PdfViewerLoader {
-        child: PdfViewerChild | null;
-        then(f: (child: PdfViewerChild) => void): void;
-    }
-
-    interface PdfEvent {
-        pageNumber: number;
-    }
-
-    interface PdfViewerChild {
-        pdfViewer: ObsidianPdfViewerLike | null;
-        on(eventName: string, listener: (event: PdfEvent) => void): void;
-        off(eventName: string, listener: (event: PdfEvent) => void): void;
-    }
-
-    interface ObsidianPdfViewerLike {
-        eventBus: PdfEventBusLike;
-        pdfOutlineViewer: PdfOutlineViewerLike;
-        pdfDocument: PdfDocument;
-    }
-
-    export interface PdfEventBusLike {
-        on(eventName: string, listener: (...args: unknown[]) => void, options?: unknown): void;
-        _on(eventName: string, listener: (...args: unknown[]) => void, options?: unknown): void;
-        _off(eventName: string, listener: (...args: unknown[]) => void): void;
-        dispatch(eventName: string, data?: unknown): void;
-    }
-
-    interface PdfOutlineViewerLike {
-        outline: PdfOutlineItemData[] | null;
-        allItems: PdfOutlineItem[];
-        linkService: {
-            goToDestination(dest: PdfDestination): void;
-        };
-        getPageNumberToDestHash(pdfDocument: PdfDocument): Promise<Map<number, PdfDestination>>;
-    }
-
-    interface PdfOutlineItem {
-        pageNumber: number;
-        item: PdfOutlineItemData;
-        getPageNumber(): Promise<number>;
-    }
-
-    export interface PdfOutlineItemData {
-        title: string;
-        bold?: boolean;
-        italic?: boolean;
-        url?: string;
-        action?: string;
-        dest?: PdfDestination;
-        setOCGState?: unknown;
-        items: PdfOutlineItemData[];
-    }
-
-    export type PdfDestination = string | unknown[];
 }
 
 /* eslint-enable no-undef -- module augmentation 范围结束，恢复全局 no-undef 检查 */

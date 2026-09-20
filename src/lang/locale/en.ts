@@ -163,7 +163,9 @@ export default {
     "H6 Color": "H6 Color",
     "General Settings": "General Settings",
     "Default expanding level": "Default expanding level",
-    "0 means no limitation, and all the rest of levels will be expanded": "0 means no limitation, and all the rest of levels will be expanded",
+    "Default expanding level desc":
+        "Default heading expansion level when opening a note. 0 collapses all; larger numbers expand deeper (up to H5).",
+    "Indent level": "Indent level",
     "Auto expand mode": "Auto expand mode",
     "Control the expansion behavior when a leaf is changed": "Control the expansion behavior when a leaf is changed",
     "Drag to modify": "Drag to modify",

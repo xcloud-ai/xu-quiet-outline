@@ -1,12 +1,8 @@
-import { Events, type FileView, type EventRef, type CanvasComponent } from "obsidian";
+import { Events, type FileView, type EventRef } from "obsidian";
 
 export type QuietOutlineEventMap = {
-    "reset-panel": [];
-    levelchange: [level: number | "inc" | "dec"];
     cursorchange: [docChanged: boolean];
     "active-fileview-change": [fileView: FileView | null];
-    "canvas-change": [];
-    "canvas-selection-change": [selection: Set<CanvasComponent>];
 };
 
 export type EventName = keyof QuietOutlineEventMap;

@@ -24,8 +24,6 @@ export interface MarkdownHeading extends Heading {
 
 export class MarkDownNav extends Nav {
     declare view: MarkdownView;
-    canDrop: boolean = true;
-    expandedKeys: string[] | undefined;
     constructor(_plugin: QuietOutline, view: MarkdownView) {
         super(_plugin, view);
         plugin = _plugin;
@@ -47,11 +45,6 @@ export class MarkDownNav extends Nav {
         }));
     }
 
-    async setHeaders(): Promise<void> {
-        const headings = await this.getHeaders();
-        store.headers = headings;
-    }
-
     async updateHeaders(): Promise<void> {
         const headings = await this.getHeaders();
         store.modifyKeys = calcModifies(store.headers, headings);
@@ -68,29 +61,10 @@ export class MarkDownNav extends Nav {
         const state = { line, cursor };
 
         void this.plugin.startJumping();
-        plugin.forEachOutlineView((view) => view.vueInstance.onPosChange(index));
+        plugin.outlineView?.onPosChange(index);
 
         window.setTimeout(() => {
             this.view.app.workspace.setActiveLeaf(this.view.leaf, { focus: true });
-            this.view.setEphemeralState(state);
-        });
-    }
-
-    // make clicking behavior consistent with core outline plugin
-    // i.e. focus editor
-    async jumpWhenClick(index: number): Promise<void> {
-        await this.jump(index);
-    }
-
-    async jumpWithoutFocus(index: number) {
-        const line: number = getHeader(index).line;
-
-        const state = { line };
-
-        void this.plugin.startJumping();
-        plugin.forEachOutlineView((view) => view.vueInstance.onPosChange(index));
-
-        window.setTimeout(() => {
             this.view.setEphemeralState(state);
         });
     }
@@ -129,7 +103,12 @@ export class MarkDownNav extends Nav {
             }
         }
 
-        return level || parseInt(plugin.settings.expand_level);
+        // frontmatter 显式写 0 时必须生效（旧代码 level || setting 会把 0 吞掉）
+        if (level !== undefined && Number.isFinite(level)) {
+            return Math.max(0, Math.min(5, level));
+        }
+        const fallback = parseInt(plugin.settings.expand_level);
+        return Number.isFinite(fallback) ? Math.max(0, Math.min(5, fallback)) : 2;
     }
 
     getPath(): string {
@@ -139,8 +118,6 @@ export class MarkDownNav extends Nav {
     handlesFile(file: TFile): boolean {
         return this.view.file === file;
     }
-
-    onExpandKeysChange(_path: string, _keys: string[]) {}
 
     async handleDrop(from: number, to: number, position: "before" | "after" | "inside") {
         const file = this.view.file;
@@ -208,7 +185,7 @@ function handleCursorChange(docChanged: boolean) {
         const index = nearestHeading(current);
         if (index === undefined) return;
 
-        plugin.forEachOutlineView((view) => view.vueInstance.onPosChange(index));
+        plugin.outlineView?.onPosChange(index);
     }
 }
 
@@ -277,7 +254,7 @@ function getCurrentLineFromPreview(view: MarkdownView): number {
     return line;
 }
 
-function nearestHeading(line: number): undefined | number {
+function nearestHeading(line: number) {
     let current_heading = null;
     let i = store.headers.length;
     while (--i >= 0) {
@@ -322,5 +299,5 @@ function _handleScroll(evt: Event) {
     const index = nearestHeading(current);
     if (index === undefined) return;
 
-    plugin.forEachOutlineView((view) => view.vueInstance.onPosChange(index));
+    plugin.outlineView?.onPosChange(index);
 }

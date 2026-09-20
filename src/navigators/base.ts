@@ -1,7 +1,6 @@
-import { type Component, type EventRef, type Menu, type TFile } from "obsidian";
+import { type Component, type EventRef, type TFile } from "obsidian";
 import type QuietOutline from "@/plugin";
-import { store, type Heading } from "@/store";
-import type { TreeOption } from "naive-ui";
+import { type Heading } from "@/store";
 import { Deferred } from "@/utils/promise";
 
 /* oxlint-disable no-unused-vars */
@@ -9,7 +8,6 @@ export abstract class Nav {
     private _used = false; // a navigator only allowed to be used once
     private _loaded = new Deferred();
     private _events: (() => void | Promise<void>)[] = [];
-    canDrop: boolean = false;
     plugin: QuietOutline;
     view: Component | null;
 
@@ -81,14 +79,9 @@ export abstract class Nav {
             el.removeEventListener(type, callback, options);
         });
     }
-    registerInterval(id: number): number {
-        this.register(() => {
-            window.clearInterval(id);
-        });
-        return id;
-    }
     getDefaultLevel() {
-        return parseInt(this.plugin.settings.expand_level);
+        const n = parseInt(this.plugin.settings.expand_level);
+        return Number.isFinite(n) ? Math.max(0, Math.min(5, n)) : 2;
     }
     // whether this navigator tracks the given file (used to filter
     // metadataCache change events)
@@ -103,24 +96,12 @@ export abstract class Nav {
     async onload(): Promise<void> {}
     async onunload(): Promise<void> {}
     async handleDrop(_from: number, _to: number, _position: "before" | "after" | "inside") {}
-    onRightClick(
-        _event: MouseEvent,
-        _nodeInfo: { node: TreeOption; no: number; level: number; raw: string },
-        _menu: Menu,
-        _onClose?: () => void,
-    ) {}
     toBottom() {}
-    onExpandKeysChange(_path: string, _keys: string[]) {}
-    changeHeadingContent(_no: number, _content: string) {}
     abstract jump(key: number): Promise<void>;
-    async jumpWithoutFocus(index: number) {
+    async jumpWhenClick(index: number) {
         await this.jump(index);
     }
-    async jumpWhenClick(index: number) {
-        await this.jumpWithoutFocus(index);
-    }
     abstract getHeaders(): Promise<Heading[]>;
-    abstract setHeaders(): Promise<void>;
     abstract updateHeaders(): Promise<void>;
 }
 
@@ -132,9 +113,6 @@ export class DummyNav extends Nav {
     async jump(_index: number) {}
     async getHeaders(): Promise<Heading[]> {
         return [];
-    }
-    async setHeaders(): Promise<void> {
-        store.headers = [];
     }
     async updateHeaders() {}
 }
