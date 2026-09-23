@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import QuietOutline from "./plugin";
-import { t } from "@/lang/helper";
+import { setLanguage, t } from "@/lang/helper";
 
 type AutoExpandMode =
     | "only-expand"
@@ -8,7 +8,13 @@ type AutoExpandMode =
     | "expand-and-collapse-rest-to-setting"
     | "disable";
 
+/** GitHub 仓库（底部文档入口统一使用） */
+const REPO_URL = "https://github.com/xcloud-ai/xu-quiet-outline";
+
 export interface QuietOutlineSettings {
+    // 界面语言："auto" 跟随 Obsidian，或 zh / en / zh-TW
+    language: string;
+
     expand_level: string;
     auto_expand_ext: AutoExpandMode;
     drag_modify: boolean;
@@ -35,6 +41,8 @@ export interface QuietOutlineSettings {
 }
 
 const DEFAULT_SETTINGS: QuietOutlineSettings = {
+    language: "auto",
+
     expand_level: "2",
     auto_expand_ext: "only-expand",
     drag_modify: true,
@@ -62,7 +70,6 @@ const DEFAULT_SETTINGS: QuietOutlineSettings = {
 
 class SettingTab extends PluginSettingTab {
     plugin: QuietOutline;
-    private activeTab: "general" | "styles" = "general";
 
     constructor(app: App, plugin: QuietOutline) {
         super(app, plugin);
@@ -74,49 +81,54 @@ class SettingTab extends PluginSettingTab {
 
         containerEl.empty();
         // 标准头：英文名（中文名）标题 + 1 行功能描述
-        // 官方审核要求：设置页标题用 Setting.setHeading()，禁止直接创建 h2 等 HTML 标题元素
+        // 官方审核要求：设置页标题用 Setting.setHeading()，禁止直接创建 h2/h3 等 HTML 标题元素
         new Setting(containerEl).setName(t("setting_title")).setHeading();
         containerEl.createDiv({ cls: "quiet-outline-hint", text: t("setting_header_desc") });
-        // Create tab navigation
-        const tabContainer = containerEl.createDiv({ cls: "quiet-outline-tabs" });
-        const generalTab = tabContainer.createEl("button", {
-            text: t("General"),
-            cls: this.activeTab === "general" ? "active" : "",
-        });
-        const stylesTab = tabContainer.createEl("button", {
-            text: t("Styles"),
-            cls: this.activeTab === "styles" ? "active" : "",
-        });
 
-        generalTab.onclick = () => {
-            this.activeTab = "general";
-            this.display();
-        };
-        stylesTab.onclick = () => {
-            this.activeTab = "styles";
-            this.display();
-        };
+        // 语言切换器（强制紧随标题区顶部）
+        new Setting(containerEl)
+            .setName(t("setting_language"))
+            .setDesc(t("setting_language_desc"))
+            .addDropdown((dropdown) =>
+                dropdown
+                    .addOptions({
+                        auto: t("lang_auto"),
+                        zh: t("lang_zh"),
+                        en: t("lang_en"),
+                        "zh-TW": t("lang_zh-TW"),
+                    })
+                    .setValue(this.plugin.settings.language)
+                    .onChange(async (value) => {
+                        this.plugin.settings.language = value;
+                        setLanguage(value);
+                        await this.plugin.saveSettings();
+                        this.display();
+                        this.plugin.refreshUI();
+                    }),
+            );
 
-        const contentContainer = containerEl.createDiv({ cls: "quiet-outline-tab-content" });
+        this.displayGeneralSettings(containerEl);
+        this.displayCommonStyleSettings(containerEl);
+        this.displayAdvancedSettings(containerEl);
 
-        if (this.activeTab === "general") {
-            this.displayGeneralSettings(contentContainer);
-        } else if (this.activeTab === "styles") {
-            this.displayStyleSettings(contentContainer);
-        }
-
-        // GitHub 使用文档（统一入口）
+        // GitHub 使用文档（统一入口，始终在最底部）
         containerEl.createEl("hr", { cls: "quiet-outline-divider" });
         new Setting(containerEl)
-            .setName(t("Documentation"))
-            .setDesc(t("View the full manual on GitHub"))
+            .setName(t("setting_docs"))
+            .setDesc(t("setting_docs_desc"))
             .addButton((btn) =>
-                btn.setButtonText(t("GitHub")).onClick(() => {
-                    window.open("https://github.com/xcloud-ai/xu-quiet-outline", "_blank");
+                btn.setButtonText(t("btn_github")).onClick(() => {
+                    window.open(REPO_URL, "_blank");
                 }),
             );
+
+        // 复位滚动位置：containerEl 即设置页滚动容器（.vertical-tab-content, overflow-y:auto）。
+        // Obsidian 会保留上次离开时的滚动偏移，导致从侧栏进入时顶部标题被滚出视口，
+        // 每次重绘后回到最顶，确保插件名标题始终第一可见。
+        containerEl.scrollTop = 0;
     }
 
+    /** 常用区：5 个核心行为设置 */
     displayGeneralSettings(containerEl: HTMLElement): void {
         new Setting(containerEl).setName(t("General Settings")).setHeading();
 
@@ -194,7 +206,8 @@ class SettingTab extends PluginSettingTab {
             );
     }
 
-    displayStyleSettings(containerEl: HTMLElement): void {
+    /** 常用区：主色覆盖 + 彩虹线总开关（装完最可能先调的外观项） */
+    displayCommonStyleSettings(containerEl: HTMLElement): void {
         new Setting(containerEl).setName(t("Style Settings")).setHeading();
 
         new Setting(containerEl)
@@ -232,6 +245,22 @@ class SettingTab extends PluginSettingTab {
                     this.plugin.refreshUI();
                 }),
             );
+    }
+
+    /**
+     * 高级设置（原生 details/summary，默认收起）：
+     * 5 个缩进层级彩虹色 + 5 个字体微调项。
+     * 布局遵循 PATTERNS §16.4.1：常用在前，低频收进折叠块。
+     */
+    displayAdvancedSettings(containerEl: HTMLElement): void {
+        const adv = containerEl.createEl("details", { cls: "quiet-outline-advanced" });
+        const summary = adv.createEl("summary");
+        summary.setText(t("sec_advanced"));
+        summary.style.cursor = "pointer";
+        summary.style.fontWeight = "600";
+        summary.style.fontSize = "var(--h3-size)";
+        summary.style.color = "var(--text-normal)";
+        summary.style.userSelect = "none";
 
         const rainbowColorKeys = [
             "rainbow_color_1",
@@ -241,7 +270,7 @@ class SettingTab extends PluginSettingTab {
             "rainbow_color_5",
         ] as const;
         rainbowColorKeys.forEach((key, i) => {
-            new Setting(containerEl)
+            new Setting(adv)
                 .setName(`${t("Indent level")} ${i + 1}`)
                 .addColorPicker((color) =>
                     color.setValue(this.plugin.settings[key]).onChange(async (value) => {
@@ -252,10 +281,9 @@ class SettingTab extends PluginSettingTab {
                 );
         });
 
-        // font settings
-        new Setting(containerEl).setName(t("Font Settings")).setHeading();
+        new Setting(adv).setName(t("Font Settings")).setHeading();
 
-        new Setting(containerEl)
+        new Setting(adv)
             .setName(t("Font size"))
             .addText((text) =>
                 text.setValue(this.plugin.settings.font_size).onChange(async (value) => {
@@ -265,7 +293,7 @@ class SettingTab extends PluginSettingTab {
                 }),
             );
 
-        new Setting(containerEl).setName(t("Font family")).addText((text) =>
+        new Setting(adv).setName(t("Font family")).addText((text) =>
             text.setValue(this.plugin.settings.font_family).onChange(async (value) => {
                 this.plugin.settings.font_family = value;
                 await this.plugin.saveSettings();
@@ -273,7 +301,7 @@ class SettingTab extends PluginSettingTab {
             }),
         );
 
-        new Setting(containerEl).setName(t("Font weight")).addText((text) =>
+        new Setting(adv).setName(t("Font weight")).addText((text) =>
             text.setValue(this.plugin.settings.font_weight).onChange(async (value) => {
                 this.plugin.settings.font_weight = value;
                 await this.plugin.saveSettings();
@@ -281,7 +309,7 @@ class SettingTab extends PluginSettingTab {
             }),
         );
 
-        new Setting(containerEl).setName(t("Line height")).addText((text) =>
+        new Setting(adv).setName(t("Line height")).addText((text) =>
             text.setValue(this.plugin.settings.line_height).onChange(async (value) => {
                 this.plugin.settings.line_height = value;
                 await this.plugin.saveSettings();
@@ -289,7 +317,7 @@ class SettingTab extends PluginSettingTab {
             }),
         );
 
-        new Setting(containerEl).setName(t("Line gap")).addText((text) =>
+        new Setting(adv).setName(t("Line gap")).addText((text) =>
             text.setValue(this.plugin.settings.line_gap).onChange(async (value) => {
                 this.plugin.settings.line_gap = value;
                 await this.plugin.saveSettings();
@@ -298,129 +326,6 @@ class SettingTab extends PluginSettingTab {
         );
     }
 
-    /**
-     * Obsidian 1.13+ 声明式设置（官方双支持 Path B：旧版本忽略此方法，继续使用 display()）。
-     * 作用：让全部设置进入 1.13+ 的全局设置搜索索引；返回纯字面量结构，
-     * 不依赖 1.13 才有的类型定义（minAppVersion 为 1.8.7）。
-     */
-    getSettingDefinitions() {
-        const levelOptions: Record<string, string> = {};
-        for (let i = 0; i <= 5; i++) levelOptions[String(i)] = String(i);
-
-        return [
-            {
-                type: "group",
-                heading: t("General Settings"),
-                items: [
-                    {
-                        name: t("Default expanding level"),
-                        desc: t("Default expanding level desc"),
-                        control: {
-                            type: "dropdown",
-                            key: "expand_level",
-                            defaultValue: "2",
-                            options: levelOptions,
-                        },
-                    },
-                    {
-                        name: t("Auto expand mode"),
-                        desc: t("Control the expansion behavior when a leaf is changed"),
-                        control: {
-                            type: "dropdown",
-                            key: "auto_expand_ext",
-                            defaultValue: "only-expand",
-                            options: {
-                                "only-expand": t("Only Expand"),
-                                "expand-and-collapse-rest-to-default": t(
-                                    "Expand and collapse the rest to default level",
-                                ),
-                                "expand-and-collapse-rest-to-setting": t(
-                                    "Expand and collapse the rest to the level below",
-                                ),
-                                disable: t("Disable"),
-                            },
-                        },
-                    },
-                    {
-                        name: t("Drag to modify"),
-                        desc: t(
-                            "Allow dragging headings in the outline to change their level and position. This will modify the note content.",
-                        ),
-                        control: { type: "toggle", key: "drag_modify" },
-                    },
-                    {
-                        name: t("Locate by cursor"),
-                        desc: t("Highlight the nearest heading by the cursor"),
-                        control: { type: "toggle", key: "locate_by_cursor" },
-                    },
-                    {
-                        name: t("Auto scroll into view"),
-                        desc: t("Highlighting headings auto scroll into view"),
-                        control: { type: "toggle", key: "auto_scroll_into_view" },
-                    },
-                ],
-            },
-            {
-                type: "group",
-                heading: t("Style Settings"),
-                items: [
-                    {
-                        name: t("Override primary color"),
-                        desc: t("This setting is used to override the primary color of the theme"),
-                        control: { type: "toggle", key: "patch_color" },
-                    },
-                    {
-                        name: t("Primary color (light mode)"),
-                        control: { type: "color", key: "primary_color_light" },
-                    },
-                    {
-                        name: t("Primary color (dark mode)"),
-                        control: { type: "color", key: "primary_color_dark" },
-                    },
-                    {
-                        name: t("Rainbow line color"),
-                        desc: t("The color of the line can be customized by rainbow"),
-                        control: { type: "toggle", key: "rainbow_line" },
-                    },
-                    ...[1, 2, 3, 4, 5].map((i) => ({
-                        name: `${t("Indent level")} ${i}`,
-                        control: { type: "color", key: `rainbow_color_${i}` },
-                    })),
-                    {
-                        name: t("Font size"),
-                        control: { type: "text", key: "font_size" },
-                    },
-                    {
-                        name: t("Font family"),
-                        control: { type: "text", key: "font_family" },
-                    },
-                    {
-                        name: t("Font weight"),
-                        control: { type: "text", key: "font_weight" },
-                    },
-                    {
-                        name: t("Line height"),
-                        control: { type: "text", key: "line_height" },
-                    },
-                    {
-                        name: t("Line gap"),
-                        control: { type: "text", key: "line_gap" },
-                    },
-                ],
-            },
-        ];
-    }
-
-    /**
-     * 1.13+ 声明式控件写值钩子：默认实现只改 settings + saveData，
-     * 这里覆盖以便颜色/开关变化后即时重算 CSS 变量（与旧版 display() 的 onChange 行为一致）。
-     * 旧版本 Obsidian 不调用此方法。
-     */
-    async setControlValue(key: string, value: unknown): Promise<void> {
-        (this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
-        await this.plugin.saveSettings();
-        this.plugin.refreshUI();
-    }
 }
 
-export { SettingTab, DEFAULT_SETTINGS };
+export { SettingTab, DEFAULT_SETTINGS, REPO_URL };

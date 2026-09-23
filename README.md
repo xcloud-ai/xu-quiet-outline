@@ -20,6 +20,7 @@ XU Quiet Outline is a lightweight outline plugin forked and trimmed from Quiet O
 - **双链标题着色**：标题中的 `[[双链]]` 以纯文本显示（无括号、跟随主题链接色）
 - **彩虹缩进线**：H1-H5 缩进线 5 色可自定义
 - **样式定制**：字号 / 字体 / 字重 / 行高 / 行间距，主色覆盖（明暗双色，默认跟随主题）+ 明暗主题适配
+- **多语言界面**：设置页支持简体中文 / English / 繁體中文，可跟随 Obsidian 界面语言
 - **多端兼容**：不依赖桌面专属 API，移动端可用
 
 ### Features
@@ -33,6 +34,7 @@ XU Quiet Outline is a lightweight outline plugin forked and trimmed from Quiet O
 - Wikilink headings shown as colored plain text (no brackets, theme link color)
 - Rainbow indentation guide lines (H1-H5, 5 customizable colors)
 - Font size / family / weight / line height / line gap customization; optional primary color override (light / dark, follows the theme by default)
+- Multilingual settings UI: 简体中文 / English / 繁體中文, can follow the Obsidian interface language
 - Mobile friendly
 
 ## 与原版 Quiet Outline 的差异
@@ -90,10 +92,11 @@ XU Quiet Outline is a lightweight outline plugin forked and trimmed from Quiet O
 
 ## 设置说明
 
-设置页分「常规设置」与「样式设置」两个页签：
+设置页顶部为界面语言切换，下方依次是「常规」「样式」常用区与默认收起的「高级」折叠区（层级彩虹色、字体微调），底部为 GitHub 使用文档入口：
 
 | 设置项 | 说明 |
 |--------|------|
+| 界面语言 | 设置面板显示语言：跟随系统（默认）/ 简体中文 / English / 繁體中文 |
 | 默认展开层级 | 打开笔记时默认展开的标题层级，0 为全部折叠，数字越大展开越深（最高到 H5），默认 2；可用 frontmatter `qo-default-level` 为单篇笔记覆盖 |
 | 自动展开模式 | 光标 / 滚动定位时对所在折叠分支的处理：仅展开当前（默认）/ 折叠其余到默认层级 / 折叠其余到指定层级 / 禁用 |
 | 拖拽改层级 | 允许在大纲中拖拽标题移动章节、修改层级与位置（会写回笔记内容），默认开启 |

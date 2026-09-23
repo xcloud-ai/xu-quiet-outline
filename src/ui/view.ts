@@ -113,17 +113,20 @@ export class OutlineView extends ItemView {
 
     private buildSlider() {
         const box = this.rootEl.createDiv({ cls: "qo-slider-box" });
+        // 同时挂 Obsidian 原生 slider 类：启用已选段主色渐变填充
         this.sliderEl = box.createEl("input", {
             type: "range",
-            cls: "qo-slider",
+            cls: "qo-slider slider",
             attr: { min: "0", max: "5", step: "1", value: String(this.expand?.level ?? 2) },
         });
         this.sliderEl.addEventListener("input", () => {
             this.expand.switchLevel(parseInt(this.sliderEl.value));
             this.renderer.render();
             this.updateSliderTitle();
+            this.updateSliderFill();
             this.saveMemoryDebounced();
         });
+        this.updateSliderFill();
         // 刻度标记 0-5
         const marks = box.createDiv({ cls: "qo-marks" });
         for (let i = 0; i <= 5; i++) {
@@ -227,6 +230,16 @@ export class OutlineView extends ItemView {
     private syncSlider() {
         this.sliderEl.value = String(this.expand.level);
         this.updateSliderTitle();
+        this.updateSliderFill();
+    }
+
+    /** 已选段填充比例（Obsidian .slider 渐变按 --slider-fill-ratio 0..1 着色） */
+    private updateSliderFill() {
+        const min = Number(this.sliderEl.min) || 0;
+        const max = Number(this.sliderEl.max) || 1;
+        const v = Number(this.sliderEl.value);
+        const ratio = max > min ? (v - min) / (max - min) : 0;
+        this.sliderEl.style.setProperty("--slider-fill-ratio", ratio.toFixed(3));
     }
 
     /** 滑杆提示：H{n}: 数量 / No expand */

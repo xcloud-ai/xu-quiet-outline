@@ -4,7 +4,8 @@ export default {
     // Markdown navigator menu: change heading level（調整標題層級）
     "Change Level": "調整層級",
     setting_title: "XU Quiet Outline（大綱）",
-    setting_header_desc: "側邊欄大綱樹：點擊跳轉、雙向定位、層級滑條、拖曳改層級、雙鏈標題著色與樣式定製。",
+    setting_header_desc:
+        "在側邊欄產生大綱樹，支援點擊跳轉、捲動與游標雙向定位、層級滑條、拖曳改層級、雙鏈標題著色與樣式定製。",
     Documentation: "使用文檔",
     "View the full manual on GitHub": "在 GitHub 查看完整使用說明",
     GitHub: "GitHub",
@@ -152,4 +153,21 @@ export default {
     "H4 Color": "H4 顏色",
     "H5 Color": "H5 顏色",
     "H6 Color": "H6 顏色",
+
+    // 分組標題（guidelines：不得含「設定/Settings」字樣）
+    "General Settings": "常規",
+    "Style Settings": "樣式",
+    "Font Settings": "字體",
+
+    // 設置頁統一鍵（2026-09-23 規範）
+    setting_language: "介面語言",
+    setting_language_desc: "選擇設定面板的顯示語言",
+    lang_auto: "跟隨系統",
+    lang_zh: "简体中文",
+    lang_en: "English",
+    "lang_zh-TW": "繁體中文",
+    sec_advanced: "進階",
+    setting_docs: "使用文件",
+    setting_docs_desc: "在 GitHub 查看完整使用說明",
+    btn_github: "GitHub",
 };

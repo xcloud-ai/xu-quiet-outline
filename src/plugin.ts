@@ -3,11 +3,11 @@ import { Component, debounce, FileView, Plugin, TFile, View } from "obsidian";
 import { Nav, createNav } from "./navigators";
 import { store } from "./store";
 import { OutlineView, VIEW_TYPE } from "./ui/view";
-import { registerIcons } from "./ui/icons";
 import { debounceCb } from "./utils/debounce";
 
 import { DEFAULT_SETTINGS, type QuietOutlineSettings, SettingTab } from "./settings";
 import { registerCommands } from "./commands";
+import { setLanguage } from "./lang/helper";
 import { eventBus } from "./utils/event-bus";
 
 export default class QuietOutline extends Plugin {
@@ -46,8 +46,9 @@ export default class QuietOutline extends Plugin {
 
     async onload() {
         await this.loadSettings();
+        // 按用户设置应用界面语言（"auto" 时 helper 内回退到 Obsidian 界面语言）
+        setLanguage(this.settings.language);
 
-        registerIcons();
         store.init(this);
 
         this.registerView(VIEW_TYPE, (leaf) => new OutlineView(leaf, this));

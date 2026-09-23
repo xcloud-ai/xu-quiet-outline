@@ -83,8 +83,28 @@
 .quiet-outline .qo-slider {
     width: 100%;
     margin: 0;
-    accent-color: var(--qo-primary);
     cursor: pointer;
+    /* 已选段填充跟随插件主色（--slider-fill-ratio 由 JS 按级别写入，
+       复用 Obsidian 原生 .slider 渐变，见 app.css input[type='range'].slider） */
+    --slider-fill-background: var(--qo-primary);
+}
+
+/* 鼠标设备：macOS 原生 thumb 为 30×18 白色大胶囊，紧凑面板中显得笨重，
+   统一收窄为 16px 圆点，与 Windows 观感一致；触屏设备保留原生 24px 便于点按 */
+@media (hover: hover) and (pointer: fine) {
+    .quiet-outline .qo-slider {
+        --slider-thumb-width: 16px;
+        --slider-thumb-height: 16px;
+        /* runnable-track 高 6px：(6 - 16) / 2 = -5px */
+        --slider-thumb-y: -5px;
+        --slider-thumb-width-active: 16px;
+        --slider-thumb-height-active: 16px;
+        --slider-thumb-y-active: -5px;
+        --slider-thumb-border-width: 1px;
+        --slider-thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        --slider-thumb-shadow-hover: 0 1px 4px rgba(0, 0, 0, 0.18);
+        --slider-thumb-shadow-active: 0 1px 4px rgba(0, 0, 0, 0.18);
+    }
 }
 
 .quiet-outline .qo-marks {
@@ -97,9 +117,10 @@
     position: absolute;
     top: 0;
     width: 2px;
-    height: 4px;
+    height: 3px;
     border-radius: 1px;
     background: var(--background-modifier-border);
+    opacity: 0.5;
     transform: translateX(-50%);
 }
 
@@ -251,43 +272,7 @@
     margin: 16px 0;
 }
 
-.quiet-outline-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--background-modifier-border);
-    margin-bottom: 16px;
-}
-
-.quiet-outline-tabs button {
-    background: none;
-    border: none;
-    padding: 8px 16px;
-    cursor: pointer;
-    color: var(--text-muted);
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s ease;
-    font-size: var(--font-ui-medium);
-}
-
-.quiet-outline-tabs button:hover {
-    color: var(--text-normal);
-    background-color: var(--background-modifier-hover);
-}
-
-.quiet-outline-tabs button.active {
-    color: var(--text-accent);
-    border-bottom-color: var(--text-accent);
-    font-weight: var(--font-semibold);
-}
-
-.quiet-outline-tab-content {
-    min-height: 400px;
-}
-
-.quiet-outline-setting-group {
-    border-radius: var(--radius-m);
-    background-color: var(--background-secondary);
-}
-
-.quiet-outline-setting-group .setting-item:not(:first-child) {
-    padding-left: 32px;
+/* 高级设置折叠块（原生 details/summary）与上方常用区留间距 */
+.quiet-outline-advanced {
+    margin: 14px 0 4px 0;
 }
