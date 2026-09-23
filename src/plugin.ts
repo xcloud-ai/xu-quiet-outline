@@ -216,13 +216,9 @@ export default class QuietOutline extends Plugin {
     }
 
     onunload(): void {
-        // 根因修复：插件「更新」时 Obsidian 以非用户禁用方式卸载（unloadPlugin(id, false)），
-        // 框架只注销 view 类型、不 detach 面板；旧 leaf 被换成 ghost 占位并由 view-registered
-        // 事件异步恢复，与 onload 的 activateView 竞态，更新后出现两个大纲面板。
-        // 本插件每次启用都会自动在右侧打开面板，因此卸载时（更新/禁用/卸载）无条件销毁全部
-        // 本类型 leaf，由下次 onload 唯一重建——与「手动禁用」的框架行为对齐，竞态不复存在。
-        // 此处同步执行：此刻框架的占位换视图链还停在首个 await，leaf.view 仍是真实面板，detach 必然命中。
-        this.app.workspace.detachLeavesOfType(VIEW_TYPE);
+        // 官方审核规则（2026-09-23 v2.2.1 审核 Error）：禁止在 onunload detach 本类型 leaf——
+        // 用户可能已把面板移到左栏/主区/新窗口，detach 后重载会被 ensureSideLeaf 重置回右栏默认位置。
+        // 更新导致的双面板改在 onload 的 activateView 内以「只撤自己新建的 leaf」方式收敛（见该方法）。
         window.clearTimeout(this.staleSweepTimer);
         void this.unloadPlugin();
     }
@@ -257,11 +253,20 @@ export default class QuietOutline extends Plugin {
     }
 
     async activateView() {
-        // 冷启动恢复：workspace.json 里若残留多个同类型 leaf（历史版本 bug 产生），先同步移除多余项，
-        // 保留最新一个，避免出现不再接收更新的"僵尸面板"
-        const staleLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
-        while (staleLeaves.length > 1) {
-            staleLeaves.shift()?.detach();
+        // 入口同步快照：更新/重载前已存在的 leaf（含 ghost ZD、deferred QD 占位——二者
+        // getViewType 均上报本类型），这些是「用户的 leaf」，全程禁止 detach（官方审核规则）。
+        const preExisting = new Set(this.app.workspace.getLeavesOfType(VIEW_TYPE));
+
+        // 更新竞态防护：disable/enable 周期中，框架对旧 leaf 执行
+        // open(空视图 $D) → setViewState(恢复) 的异步链且不 await；$D 不匹配本类型的窗口里
+        // getLeavesOfType 恰好为空，此刻新建面板，旧 leaf 随后恢复就成双面板。
+        // 恢复链是纯微任务+DOM（无 IO），短等一帧让它落地后复查；仍为空才是「真没有面板」
+        // （首装 / 用户曾手动关闭），允许新建。冷启动 deferred leaf（QD）在快照中已可见，不会等待。
+        if (preExisting.size === 0) {
+            await sleep(60);
+            for (const revived of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
+                preExisting.add(revived);
+            }
         }
 
         // Obsidian 1.7.2+ defers sidebar views by default: an existing leaf may be
@@ -272,23 +277,25 @@ export default class QuietOutline extends Plugin {
             reveal: true,
         });
         await this.app.workspace.revealLeaf(leaf);
-        this.scheduleStaleLeafSweep(leaf);
+
+        // leaf 不在快照中 = 本次调用新建。若稍后旧 leaf 被框架恢复造成重复，
+        // 只撤「我们新建的」这个（右栏默认位），保留用户原位 leaf；定时器卸载时清理。
+        if (!preExisting.has(leaf)) {
+            this.scheduleRetractCreatedLeaf(leaf);
+        }
     }
 
     /**
-     * 延迟兜底清扫：从「不含本修复的旧版本」直接更新上来时，旧实例 onunload 没有销毁 leaf，
-     * 框架的 ghost 恢复链与本实例建面板可能各自落地一个 leaf；占位视图延迟到插入 DOM 时才复活，
-     * 重复项未必在 onload 当刻可见。500ms 后再次清点，只保留已确保的侧栏 leaf，其余一律 detach。
-     * 定时器在 onunload / register 清理时撤销，不会跨实例误删。
+     * 60ms 空窗等待后仍可能因极端时序与框架恢复链并行落地两个 leaf（新建 + 旧 leaf 延迟复活）。
+     * 500ms 后清点：仅当本实例新建的 leaf 与其他本类型 leaf 并存时，撤掉新建项，
+     * 绝不触碰其余 leaf（用户可能手动拆分或移动过位置）。
      */
-    private scheduleStaleLeafSweep(keep: WorkspaceLeaf) {
+    private scheduleRetractCreatedLeaf(created: WorkspaceLeaf) {
         window.clearTimeout(this.staleSweepTimer);
         this.staleSweepTimer = window.setTimeout(() => {
             const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
-            if (leaves.length > 1 && leaves.includes(keep)) {
-                for (const extra of leaves) {
-                    if (extra !== keep) extra.detach();
-                }
+            if (leaves.length > 1 && leaves.includes(created)) {
+                created.detach();
             }
         }, 500);
     }
