@@ -1,4 +1,12 @@
-import { Component, debounce, FileView, Plugin, TFile, View } from "obsidian";
+import {
+    Component,
+    debounce,
+    FileView,
+    Plugin,
+    TFile,
+    View,
+    type WorkspaceLeaf,
+} from "obsidian";
 
 import { Nav, createNav } from "./navigators";
 import { store } from "./store";
@@ -18,6 +26,8 @@ export default class QuietOutline extends Plugin {
     jumping = true;
     /** 当前挂载的大纲面板（单面板模型） */
     outlineView: OutlineView | null = null;
+    /** 延迟兜底清扫定时器（更新后残留重复面板的自愈） */
+    private staleSweepTimer = -1;
 
     /** 遍历所有已挂载的大纲面板（插件更新后可能残留多个，均需刷新） */
     forEachOutlineView(cb: (view: OutlineView) => void) {
@@ -53,6 +63,8 @@ export default class QuietOutline extends Plugin {
         store.init(this);
 
         this.registerView(VIEW_TYPE, (leaf) => new OutlineView(leaf, this));
+        // 插件被卸载/替换时撤掉兜底清扫定时器，避免新实例的面板被旧实例定时器误删
+        this.register(() => window.clearTimeout(this.staleSweepTimer));
         this.registerListener();
         registerCommands(this);
         this.addSettingTab(new SettingTab(this.app, this));
@@ -204,6 +216,14 @@ export default class QuietOutline extends Plugin {
     }
 
     onunload(): void {
+        // 根因修复：插件「更新」时 Obsidian 以非用户禁用方式卸载（unloadPlugin(id, false)），
+        // 框架只注销 view 类型、不 detach 面板；旧 leaf 被换成 ghost 占位并由 view-registered
+        // 事件异步恢复，与 onload 的 activateView 竞态，更新后出现两个大纲面板。
+        // 本插件每次启用都会自动在右侧打开面板，因此卸载时（更新/禁用/卸载）无条件销毁全部
+        // 本类型 leaf，由下次 onload 唯一重建——与「手动禁用」的框架行为对齐，竞态不复存在。
+        // 此处同步执行：此刻框架的占位换视图链还停在首个 await，leaf.view 仍是真实面板，detach 必然命中。
+        this.app.workspace.detachLeavesOfType(VIEW_TYPE);
+        window.clearTimeout(this.staleSweepTimer);
         void this.unloadPlugin();
     }
 
@@ -237,8 +257,8 @@ export default class QuietOutline extends Plugin {
     }
 
     async activateView() {
-        // 插件更新/重载后 workspace 可能残留多个大纲面板（旧面板未随卸载销毁 + 新面板被创建），
-        // 保留最新一个并移除其余，避免出现不再接收更新的"僵尸面板"
+        // 冷启动恢复：workspace.json 里若残留多个同类型 leaf（历史版本 bug 产生），先同步移除多余项，
+        // 保留最新一个，避免出现不再接收更新的"僵尸面板"
         const staleLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
         while (staleLeaves.length > 1) {
             staleLeaves.shift()?.detach();
@@ -252,5 +272,24 @@ export default class QuietOutline extends Plugin {
             reveal: true,
         });
         await this.app.workspace.revealLeaf(leaf);
+        this.scheduleStaleLeafSweep(leaf);
+    }
+
+    /**
+     * 延迟兜底清扫：从「不含本修复的旧版本」直接更新上来时，旧实例 onunload 没有销毁 leaf，
+     * 框架的 ghost 恢复链与本实例建面板可能各自落地一个 leaf；占位视图延迟到插入 DOM 时才复活，
+     * 重复项未必在 onload 当刻可见。500ms 后再次清点，只保留已确保的侧栏 leaf，其余一律 detach。
+     * 定时器在 onunload / register 清理时撤销，不会跨实例误删。
+     */
+    private scheduleStaleLeafSweep(keep: WorkspaceLeaf) {
+        window.clearTimeout(this.staleSweepTimer);
+        this.staleSweepTimer = window.setTimeout(() => {
+            const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
+            if (leaves.length > 1 && leaves.includes(keep)) {
+                for (const extra of leaves) {
+                    if (extra !== keep) extra.detach();
+                }
+            }
+        }, 500);
     }
 }
