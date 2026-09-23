@@ -11,7 +11,8 @@ import { setLanguage } from "./lang/helper";
 import { eventBus } from "./utils/event-bus";
 
 export default class QuietOutline extends Plugin {
-    settings!: QuietOutlineSettings;
+    // declare：1.13 类型包基类 Plugin 已声明 settings，此处收窄为本插件具体类型
+    declare settings: QuietOutlineSettings;
     navigator: Nav = createNav("dummy", this, null);
     // jumping flag: false while a jump-initiated scroll is settling (1s window)
     jumping = true;

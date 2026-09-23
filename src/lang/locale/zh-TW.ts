@@ -158,6 +158,10 @@ export default {
     "General Settings": "常規",
     "Style Settings": "樣式",
     "Font Settings": "字體",
+    "Indent level": "縮排層級",
+    "Primary color (light mode)": "主色（淺色模式）",
+    "Primary color (dark mode)": "主色（深色模式）",
+    "Rainbow line colors": "彩虹縮排線顏色",
 
     // 設置頁統一鍵（2026-09-23 規範）
     setting_language: "介面語言",

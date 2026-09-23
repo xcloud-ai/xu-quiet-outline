@@ -259,20 +259,9 @@
     box-shadow: inset 0 0 0 2px var(--qo-primary);
 }
 
-/* ============ 设置面板 ============ */
-.quiet-outline-hint {
-    margin: 0 0 8px 0;
-    color: var(--text-muted);
-    font-size: var(--font-ui-smaller);
-}
+/*
+ * 设置面板样式说明（Obsidian 1.13+ 声明式 Settings API）：
+ * 设置页由 Obsidian 从 getSettingDefinitions() 原生渲染，本文件不再为其提供样式；
+ * 下方仅保留大纲视图（.quiet-outline 作用域）自身的外观规则。
+ */
 
-.quiet-outline-divider {
-    border: none;
-    border-top: 1px solid var(--background-modifier-border);
-    margin: 16px 0;
-}
-
-/* 高级设置折叠块（原生 details/summary）与上方常用区留间距 */
-.quiet-outline-advanced {
-    margin: 14px 0 4px 0;
-}
